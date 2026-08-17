@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฟอร์มลางาน</title>
+    <!-- โหลด LIFF SDK จาก LINE -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #00B900; color: white; border: none; border-radius: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <h2>แบบฟอร์มลางาน</h2>
+    <div id="profile-info" style="margin-bottom: 20px; color: #555;">กำลังโหลดข้อมูลพนักงาน...</div>
+
+    <form id="leave-form">
+        <!-- รหัสพนักงาน (จำเป็นต้องมีเพื่อให้สคริปต์ทำงานได้) -->
+        <div class="form-group">
+            <label>รหัสพนักงาน (EmpID)</label>
+            <input type="text" id="emp-id" placeholder="ระบุรหัสพนักงาน" required>
+        </div>
+
+        <div class="form-group">
+            <label>ประเภทการลา (LeaveType)</label>
+            <select id="leave-type">
+                <option value="1">ลาป่วย (Sick)</option>
+                <option value="5">ลากิจ (Personal)</option>
+                <option value="0">ลาพักร้อน (Vacation)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>รูปแบบการลา</label>
+            <select id="start-type" onchange="toggleLeaveType()">
+                <option value="0">ลาเต็มวัน (Full Day)</option>
+                <option value="1">ลาครึ่งวัน (Half Day)</option>
+                <option value="2">ลารายชั่วโมง (Hourly)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>วันที่เริ่มลา (StartDate)</label>
+            <input type="date" id="start-date" required>
+        </div>
+
+        <!-- เวลาที่เริ่มลา (โชว์เมื่อเลือกครึ่งวันหรือรายชั่วโมง) -->
+        <div class="form-group" id="time-group" style="display: none;">
+            <label>เวลาที่เริ่มลา (เช่น 09:00)</label>
+            <input type="time" id="start-time">
+        </div>
+
+        <!-- จำนวนวัน (โชว์เมื่อเลือกลาเต็มวัน) -->
+        <div class="form-group" id="days-group">
+            <label>จำนวนวันลา (วัน)</label>
+            <input type="number" id="leave-days" value="1" min="1" step="0.5">
+        </div>
+
+        <!-- จำนวนชั่วโมงและนาที (โชว์เมื่อเลือกลารายชั่วโมง) -->
+        <div class="form-group" id="hours-group" style="display: none;">
+            <label>ระยะเวลาที่ต้องการลา</label>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <input type="number" id="leave-hours" placeholder="ชั่วโมง" value="1" min="0" max="8">
+                    <small style="color: #666;">ชั่วโมง</small>
+                </div>
+                <div style="flex: 1;">
+                    <input type="number" id="leave-minutes" placeholder="นาที" value="0" min="0" max="59">
+                    <small style="color: #666;">นาที</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>เหตุผลที่ลา (Reason)</label>
+            <input type="text" id="reason" placeholder="ระบุเหตุผลให้ชัดเจน" required>
+        </div>
+        
+        <button type="button" onclick="submitLeave()">ส่งคำขอลา</button>
+    </form>
+
+    <script>
+        const liffId = "2011138589-EQQGzszv"; 
+        const scriptUrl = "https://script.google.com/macros/s/AKfycbzfTYpMQc2L-_a7LOObmiJP-AvBPtZxjaQQTUqQxipLfPN3V4XXN28JJKHVqnQbqMH2wQ/exec"; 
+
+        async function main() {
+            await liff.init({ liffId: liffId });
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                const userId = profile.userId;
+                
+                // โชว์ข้อความระหว่างรอระบบดึงข้อมูล
+                document.getElementById("profile-info").innerText = "กำลังค้นหาข้อมูลพนักงาน...";
+                
+                // เรียกข้อมูลจาก Google Sheets (ส่ง userId ไปถาม)
+                fetch(scriptUrl + "?userId=" + userId)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "success") {
+                        // ถ้าเจอข้อมูล: จับรหัสใส่ช่องแล้วล็อกไว้ไม่ให้แก้ พร้อมโชว์ชื่อจริง
+                        document.getElementById("emp-id").value = result.data.empId;
+                        document.getElementById("emp-id").readOnly = true; 
+                        document.getElementById("emp-id").style.backgroundColor = "#e9ecef"; // เปลี่ยนสีพื้นหลังช่องให้รู้ว่าล็อก
+                        document.getElementById("profile-info").innerText = "พนักงาน: " + result.data.name;
+                        document.getElementById("profile-info").style.color = "#00B900"; // เปลี่ยนชื่อเป็นสีเขียว
+                    } else {
+                        // ถ้าไม่เจอ (เป็นพนักงานใหม่ที่ยังไม่ได้ผูก LINE): ให้พิมพ์รหัสเอง
+                        document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (กรุณากรอกรหัสพนักงาน)";
+                        document.getElementById("profile-info").style.color = "#ff3344";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName;
+                });
+
+            } else {
+                liff.login();
+            }
+        }
+
+        // ฟังก์ชันสลับการแสดงผลเวลา/วัน/ชั่วโมง
+        function toggleLeaveType() {
+            const type = document.getElementById("start-type").value;
+            const timeGroup = document.getElementById("time-group");
+            const daysGroup = document.getElementById("days-group");
+            const hoursGroup = document.getElementById("hours-group");
+
+            if (type === "0") { // เต็มวัน
+                timeGroup.style.display = "none";
+                daysGroup.style.display = "block";
+                hoursGroup.style.display = "none";
+            } else if (type === "1") { // ครึ่งวัน
+                timeGroup.style.display = "block";
+                daysGroup.style.display = "none";
+                hoursGroup.style.display = "none";
+            } else if (type === "2") { // รายชั่วโมง
+                timeGroup.style.display = "block";
+                daysGroup.style.display = "none";
+                hoursGroup.style.display = "block";
+            }
+        }
+
+        async function submitLeave() {
+            const empId = document.getElementById("emp-id").value;
+            const leaveType = document.getElementById("leave-type").value;
+            const startType = document.getElementById("start-type").value;
+            const startDate = document.getElementById("start-date").value;
+            const startTime = document.getElementById("start-time").value;
+            const inputDays = document.getElementById("leave-days").value;
+            const inputHours = document.getElementById("leave-hours").value;
+            const inputMinutes = document.getElementById("leave-minutes").value;
+            const reason = document.getElementById("reason").value;
+
+            if (!empId || !startDate || !reason) {
+                alert("กรุณากรอกข้อมูลและเหตุผลให้ครบถ้วน");
+                return;
+            }
+
+            let leaveDays = "";
+            let leaveHours = "";
+            let leaveMinutes = ""; 
+            
+            if (startType === "0") {
+                leaveDays = inputDays;       
+            } else if (startType === "1") {
+                leaveDays = "0.5";          
+            } else if (startType === "2") {
+                leaveHours = inputHours;    
+                leaveMinutes = inputMinutes; 
+            }
+
+            let userId = "ไม่พบข้อมูล LINE";
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+            }
+
+            const data = {
+                userId: userId,
+                empId: empId,
+                startDate: startDate,
+                startType: startType,
+                startTime: startTime,      
+                leaveDays: leaveDays,       
+                leaveHours: leaveHours,     
+                leaveMinutes: leaveMinutes, 
+                leaveType: leaveType,
+                reason: reason
+            };
+
+            const btn = document.querySelector("button");
+            btn.innerText = "กำลังส่งข้อมูล...";
+            btn.disabled = true;
+
+            // แก้ไขส่วนนี้ให้อ่านข้อความ Error จากหลังบ้าน
+            fetch(scriptUrl, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json()) 
+            .then(result => {
+                if (result.status === "error") {
+                    alert("ระบบหลังบ้านแจ้งว่า: " + result.message);
+                    btn.innerText = "ส่งคำขอลา";
+                    btn.disabled = false; 
+                } else {
+                    alert("ส่งคำขอลาสำเร็จเรียบร้อย!");
+                    liff.closeWindow(); 
+                }
+            })
+            .catch(error => {
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error);
+                btn.innerText = "ส่งคำขอลา";
+                btn.disabled = false; 
+            });
+        }
+
+        // เรียกใช้ฟังก์ชัน main เมื่อโหลดสคริปต์เสร็จ
+        main();
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็ค LINE User ID ของคุณ</title>
+    <!-- โหลด LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; text-align: center; background-color: #f7f9fa; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 10px; font-size: 14px; text-align: center; margin-top: 10px; box-sizing: border-box; background: #e9ecef; border: 1px solid #ced4da; border-radius: 5px; }
+        button { margin-top: 15px; width: 100%; padding: 10px; background-color: #00B900; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:active { background-color: #009900; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🔍 เช็ค LINE User ID</h2>
+        <p id="loading" style="color: #666;">กำลังดึงข้อมูลบัญชี LINE ของคุณ...</p>
+        
+        <div id="result-box" style="display: none;">
+            <p style="color: #333; font-size: 14px;">คัดลอกรหัสนี้ส่งให้ HR หรือนำไปใส่ในระบบได้เลยครับ:</p>
+            <input type="text" id="user-id-input" readonly>
+            <button onclick="copyId()">📋 คัดลอกรหัส</button>
+        </div>
+    </div>
+
+    <script>
+        // ใช้ LIFF ID ตัวเดิมได้เลยครับ
+        const liffId = "2011138589-EQQGzszv"; 
+
+        async function initGetId() {
+            try {
+                await liff.init({ liffId: liffId });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("result-box").style.display = "block";
+                    document.getElementById("user-id-input").value = profile.userId;
+                } else {
+                    liff.login();
+                }
+            } catch (error) {
+                document.getElementById("loading").innerText = "เกิดข้อผิดพลาด: " + error;
+            }
+        }
+
+        function copyId() {
+            const copyText = document.getElementById("user-id-input");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // สำหรับมือถือ
+            navigator.clipboard.writeText(copyText.value);
+            alert("คัดลอก LINE User ID เรียบร้อยแล้ว!");
+        }
+
+        initGetId();
+    </script>
+</body>
+</html>
