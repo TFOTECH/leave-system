@@ -136,30 +136,33 @@
             const [y, m, d] = selectedDateStr.split("-");
             const selectedDate = new Date(y, m - 1, d);
             const today = new Date();
-            today.setHours(0,0,0,0);
+            today.setHours(0,0,0,0); // รีเซ็ตเวลาของวันนี้ให้เริ่มที่เที่ยงคืนตรง
 
             if (selectedDate < today) {
                 let workingDaysCount = 0;
                 let currentDate = new Date(selectedDate);
 
-                // นับจากวันที่เลือก จนถึง วันก่อนหน้าปัจจุบัน
+                // เริ่มนับตั้งแต่วันที่ขอลา จนถึง "เมื่อวาน"
                 while (currentDate < today) {
                     const dayOfWeek = currentDate.getDay();
                     const dStr = currentDate.getFullYear() + "-" + String(currentDate.getMonth() + 1).padStart(2, '0') + "-" + String(currentDate.getDate()).padStart(2, '0');
 
                     // ถ้าไม่ใช่วันเสาร์(6) อาทิตย์(0) และไม่ใช่วันหยุดบริษัท
                     if (dayOfWeek !== 0 && dayOfWeek !== 6 && !companyHolidays.includes(dStr)) {
-                        // ถ้าไม่ใช่วันที่เคยลาไปแล้ว ค่อยนับเป็น 1 วันทำงาน
+                        // ถ้าไม่ใช่วันที่เคยลาไปแล้ว ค่อยบวกเป็น 1 วันทำงาน
                         if (!userPastLeaves.includes(dStr)) {
                             workingDaysCount++;
                         }
                     }
-                    currentDate.setDate(currentDate.getDate() + 1);
+                    currentDate.setDate(currentDate.getDate() + 1); // ขยับไปตรวจสอบวันถัดไป
                 }
 
-                if (workingDaysCount > 3) {
-                    showAlert("แจ้งเตือนจากระบบ", "ไม่สามารถลาย้อนหลังเกิน 3 วันทำงานได้ครับ\n(ระบบได้หักลบวันหยุด, เสาร์-อาทิตย์ และวันที่คุณมีประวัติการลาเรียบร้อยแล้ว)", false);
-                    this.value = ""; 
+                // จำลองตามที่คุณบอกเป๊ะๆ : ลาวันที่ 6
+                // ถ้ามากดวันที่ 10 (นับได้ 2 วันคือ 6, 7) -> ไม่เกิน 3 -> ให้ผ่าน
+                // ถ้ามากดวันที่ 11 (นับได้ 3 วันคือ 6, 7, 10) -> ถือว่าเลยกำหนดแล้ว (>= 3) -> โดนบล็อก!
+                if (workingDaysCount >= 3) {
+                    showAlert("แจ้งเตือนจากระบบ", "คุณไม่สามารถลาย้อนหลังเกิน 3 วันทำงานได้ครับ\n(ระบบได้หักลบวันหยุด, เสาร์-อาทิตย์ และวันที่คุณเคยลาไปแล้ว)", false);
+                    this.value = ""; // ลบช่องวันที่ทิ้ง บังคับให้ส่งไม่ได้
                 }
             }
         });
