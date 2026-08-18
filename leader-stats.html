@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สถิติการลาของพนักงาน</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background-color: #f4f7f6; padding: 15px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
+        h2 { color: #333; margin-top: 0; font-size: 18px; text-align: center; }
+        select { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        .summary-box { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .stat-card { flex: 1; min-width: 45%; background: #e9ecef; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-card h4 { margin: 0 0 5px 0; color: #0056b3; font-size: 14px; }
+        .stat-card span { font-size: 18px; font-weight: bold; color: #dc3545; }
+        .history-list { border-top: 2px solid #eee; padding-top: 15px; }
+        .history-item { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 14px; }
+        .date-badge { display: inline-block; background: #17a2b8; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📊 ประวัติการลา รหัส: <span id="display-empid" style="color:#0056b3;">...</span></h2>
+        
+        <label for="monthFilter">เลือกเดือนที่ต้องการดู:</label>
+        <select id="monthFilter" onchange="filterData()">
+            <option value="all">ดูทั้งหมดทุกเดือน</option>
+            <option value="01">มกราคม</option>
+            <option value="02">กุมภาพันธ์</option>
+            <option value="03">มีนาคม</option>
+            <option value="04">เมษายน</option>
+            <option value="05">พฤษภาคม</option>
+            <option value="06">มิถุนายน</option>
+            <option value="07">กรกฎาคม</option>
+            <option value="08">สิงหาคม</option>
+            <option value="09">กันยายน</option>
+            <option value="10">ตุลาคม</option>
+            <option value="11">พฤศจิกายน</option>
+            <option value="12">ธันวาคม</option>
+        </select>
+
+        <p id="loading" style="text-align:center; color:#666;">กำลังโหลดข้อมูล...</p>
+        
+        <!-- สรุปตัวเลขรายเดือน -->
+        <div class="summary-box" id="summaryBox" style="display:none;"></div>
+        
+        <!-- รายการประวัติ -->
+        <div class="history-list" id="historyList" style="display:none;"></div>
+    </div>
+
+    <script>
+        // 🛑 ใส่ Web App URL ของคุณที่นี่ 🛑
+        const scriptUrl = "https://script.google.com/macros/s/AKfycbwf9WmGA7ZBjxh4e35HBToctn6WDGx_CFhpO28HN_2BQedN9Ghdv4Fm5xC3cLMi6Ssd/exec"; 
+        
+        let allRecords = [];
+
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: "2011138589-OVZEZPRe" });
+                // ดึงรหัสพนักงานจากลิงก์
+                const urlParams = new URLSearchParams(window.location.search);
+                const empId = urlParams.get('empId');
+                
+                if (empId) {
+                    document.getElementById("display-empid").innerText = empId;
+                    fetchHistory(empId);
+                } else {
+                    document.getElementById("loading").innerText = "ไม่พบรหัสพนักงานอ้างอิง";
+                }
+            } catch (err) {
+                document.getElementById("loading").innerText = "Error: " + err;
+            }
+        }
+
+        function fetchHistory(empId) {
+            fetch(scriptUrl + "?action=get_emp_history&empId=" + empId)
+            .then(res => res.json())
+            .then(result => {
+                if(result.status === "success") {
+                    allRecords = result.data;
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("summaryBox").style.display = "flex";
+                    document.getElementById("historyList").style.display = "block";
+                    filterData(); // โหลดข้อมูลทั้งหมดตอนเปิดครั้งแรก
+                } else {
+                    document.getElementById("loading").innerText = "เกิดข้อผิดพลาดในการดึงข้อมูล";
+                }
+            });
+        }
+
+        function filterData() {
+            const selectedMonth = document.getElementById("monthFilter").value;
+            let filtered = allRecords;
+
+            if (selectedMonth !== "all") {
+                filtered = allRecords.filter(record => {
+                    // วันที่จะมาในรูปแบบ 2026-08-20
+                    const recordMonth = record.date.split("-")[1]; 
+                    return recordMonth === selectedMonth;
+                });
+            }
+
+            // คำนวณยอดรวม
+            let sumVacation = 0, sumSick = 0, sumPersonal = 0, sumOther = 0;
+            let historyHtml = "";
+
+            filtered.forEach(item => {
+                let typeName = "";
+                if (item.type === "0") { typeName = "ลาพักร้อน"; sumVacation += item.days; }
+                else if (item.type === "1") { typeName = "ลาป่วย"; sumSick += item.days; }
+                else if (item.type === "5") { typeName = "ลากิจ"; sumPersonal += item.days; }
+                else { typeName = "อื่นๆ/พิเศษ"; sumOther += item.days; }
+
+                historyHtml += `
+                    <div class="history-item">
+                        <span class="date-badge">${item.date}</span><br>
+                        <strong>${typeName}</strong> ${item.days} วัน<br>
+                        <span style="color:#666;">เหตุผล: ${item.reason}</span>
+                    </div>
+                `;
+            });
+
+            if (filtered.length === 0) historyHtml = "<p style='text-align:center;'>ไม่มีประวัติการลาในเดือนนี้</p>";
+
+            // สร้างกล่องสรุป
+            document.getElementById("summaryBox").innerHTML = `
+                <div class="stat-card"><h4>ลาป่วย</h4><span>${sumSick} วัน</span></div>
+                <div class="stat-card"><h4>ลากิจ</h4><span>${sumPersonal} วัน</span></div>
+                <div class="stat-card"><h4>ลาพักร้อน</h4><span>${sumVacation} วัน</span></div>
+                <div class="stat-card"><h4>อื่นๆ</h4><span>${sumOther} วัน</span></div>
+            `;
+            document.getElementById("historyList").innerHTML = historyHtml;
+        }
+
+        initLiff();
+    </script>
+</body>
+</html>
