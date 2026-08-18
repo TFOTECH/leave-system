@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คสิทธิ์วันลาคงเหลือ</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background-color: #f4f7f6; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h2 { color: #333; margin-top: 0; }
+        .quota-box { background: #e9ecef; margin: 15px 0; padding: 15px; border-radius: 8px; text-align: left; }
+        .quota-box h3 { margin: 0 0 10px 0; color: #0056b3; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .remain { font-weight: bold; color: #28a745; font-size: 16px; }
+        .used-only { color: #dc3545; font-weight: bold; }
+        #loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>📊 สถิติการลางานปีนี้</h2>
+        <p id="loading">กำลังประมวลผลข้อมูลของคุณ...</p>
+        
+        <!-- ข้อมูลจะถูกดึงมาสร้างกล่องอัตโนมัติที่นี่ -->
+        <div id="result-container" style="display: none;"></div>
+    </div>
+
+    <script>
+        // 🛑 เปลี่ยน 2 ตัวแปรนี้ให้เป็นของคุณ 🛑
+        const liffId = "ใส่_LIFF_ID_ของคุณที่นี่"; 
+        const scriptUrl = "ใส่_URL_ที่ได้จากตอน_Deploy_เมื่อกี้"; 
+
+        async function initCheckLeave() {
+            try {
+                await liff.init({ liffId: liffId });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    fetchData(profile.userId);
+                } else {
+                    liff.login();
+                }
+            } catch (error) {
+                document.getElementById("loading").innerText = "Error LIFF: " + error;
+            }
+        }
+
+        function fetchData(userId) {
+            fetch(scriptUrl + "?action=check_quota&userId=" + userId)
+            .then(response => response.json())
+            .then(result => {
+                if(result.status === "success") {
+                    document.getElementById("loading").style.display = "none";
+                    const container = document.getElementById("result-container");
+                    container.style.display = "block";
+                    container.innerHTML = ""; // ล้างข้อมูลเดิม
+
+                    // สร้างกล่องสิทธิ์วันลาตามข้อมูลที่ส่งมาจาก Google Sheets
+                    result.data.forEach(item => {
+                        let innerHtml = "";
+                        
+                        // ถ้ายอดโควต้าเป็น 0 ให้โชว์เฉพาะยอดใช้ไป
+                        if (item.quota <= 0) {
+                            innerHtml = `
+                                <div class="row">
+                                    <span>ใช้ไปแล้ว:</span> 
+                                    <span class="used-only">${item.used} วัน</span>
+                                </div>
+                            `;
+                        } 
+                        // ถ้ามียอดโควต้า ให้โชว์ สิทธิ์ทั้งหมด > ใช้ไป > คงเหลือ
+                        else {
+                            innerHtml = `
+                                <div class="row"><span>สิทธิ์ทั้งหมด:</span> <span>${item.quota} วัน</span></div>
+                                <div class="row"><span>ใช้ไปแล้ว:</span> <span>${item.used} วัน</span></div>
+                                <div class="row remain"><span>คงเหลือ:</span> <span>${item.remain} วัน</span></div>
+                            `;
+                        }
+
+                        // ประกอบร่างกล่อง HTML
+                        const box = `
+                            <div class="quota-box">
+                                <h3>${item.name}</h3>
+                                ${innerHtml}
+                            </div>
+                        `;
+                        container.innerHTML += box;
+                    });
+
+                } else {
+                    document.getElementById("loading").innerText = result.message || "ไม่พบข้อมูลโควต้าของคุณ";
+                }
+            })
+            .catch(error => {
+                document.getElementById("loading").innerText = "Error Fetching Data: " + error;
+            });
+        }
+
+        initCheckLeave();
+    </script>
+</body>
+</html>
