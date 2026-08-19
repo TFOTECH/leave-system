@@ -8,7 +8,7 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #333; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
         input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         button { width: 100%; padding: 12px; background-color: #00B900; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .duration-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
@@ -26,7 +26,6 @@
             <input type="text" id="emp-id" placeholder="ระบุรหัสพนักงาน" required>
         </div>
 
-        <!-- แก้ไขประเภทการลา (ตั้งให้ตัวจางตอนยังไม่เลือก) -->
         <div class="form-group">
             <label>ประเภทการลา (LeaveType)</label>
             <select id="leave-type" required style="color: #999;" onchange="this.style.color='#000';">
@@ -45,7 +44,6 @@
             <input type="date" id="start-date" required>
         </div>
 
-        <!-- แก้ไขรูปแบบการลา -->
         <div class="form-group">
             <label>รูปแบบการลา</label>
             <select id="start-type" onchange="toggleLeaveType()">
@@ -55,13 +53,11 @@
             </select>
         </div>
 
-        <!-- ซ่อน/แสดง เวลาตามรูปแบบการลา -->
         <div class="form-group" id="time-group" style="display: none;">
             <label>เวลาที่เริ่มลา (เช่น 09:00)</label>
             <input type="time" id="start-time">
         </div>
 
-        <!-- ปุ่มแนบเอกสาร -->
         <div class="form-group">
             <label for="attachment" style="cursor: pointer; display: inline-block; padding: 6px 12px; border: 1px solid #777; background: #f9f9f9; border-radius: 4px; font-size: 14px; text-align: center;">
                 แนบเอกสารประกอบ
@@ -70,18 +66,18 @@
             <input type="file" id="attachment" style="display: none;" accept="image/*,.pdf" onchange="document.getElementById('file-name-display').innerText = this.files.length > 0 ? this.files[0].name : '';">
         </div>
 
-        <!-- แก้ไขตัวเลือกจำนวนการลาแบบ Dropdown ตามภาพประกอบ -->
+        <!-- ตัวเลือกจำนวนการลา -->
         <div class="form-group" id="duration-group">
             <label>จำนวนการลา</label>
             <div class="duration-group">
                 <div class="duration-item">
-                    <select id="leave-days" style="width: 85px;"></select> <span>วัน</span>
+                    <select id="leave-days" style="width: 100px;"></select> <span>วัน</span>
                 </div>
                 <div class="duration-item">
-                    <select id="leave-hours" style="width: 85px;"></select> <span>ชั่วโมง</span>
+                    <select id="leave-hours" style="width: 100px;"></select> <span>ชั่วโมง</span>
                 </div>
                 <div class="duration-item">
-                    <select id="leave-minutes" style="width: 70px;">
+                    <select id="leave-minutes" style="width: 80px;">
                         <option value="">-</option>
                         <option value="30">30</option>
                     </select> <span>นาที</span>
@@ -107,8 +103,7 @@
 
     <script>
         const liffId = "2011138589-EQQGzszv"; 
-        const scriptUrl = "https://script.google.com/macros/s/AKfycbyJUZqnVMbzPOT9syPjTxfTCHczihlDlLlVHsy9JjAhqeo0oI97KAkCAVsV-3UwJAnx7Q/exec
-"; 
+        const scriptUrl = "https://script.google.com/macros/s/AKfycbyJUZqnVMbzPOT9syPjTxfTCHczihlDlLlVHsy9JjAhqeo0oI97KAkCAVsV-3UwJAnx7Q/exec"; 
         
         let isLeaveSuccess = false;
         let companyHolidays = [];
@@ -126,32 +121,37 @@
             if(isLeaveSuccess) { liff.closeWindow(); }
         }
 
-        // ฟังก์ชันสร้างตัวเลือกวันและชั่วโมงอัตโนมัติ (ตามรูปประกอบ)
+        // สร้างตัวเลือก วัน และ ชั่วโมง
         function generateDropdownOptions() {
+            // วัน: 1/2 วัน ถึง 30 วัน
             const daysSelect = document.getElementById("leave-days");
             daysSelect.innerHTML = '<option value="">-</option>';
-            for (let i = 1; i <= 15; i += 0.5) {
-                let text = Number.isInteger(i) ? i + ' วัน' : Math.floor(i) + ' 1/2 วัน';
+            for (let i = 0.5; i <= 30; i += 0.5) {
+                let text = (i === 0.5) ? "1/2 วัน" : (Number.isInteger(i) ? i + ' วัน' : Math.floor(i) + ' 1/2 วัน');
                 daysSelect.innerHTML += '<option value="' + i + '">' + text + '</option>';
             }
 
+            // ชั่วโมง: 1 ช.ม. ถึง 8 Hours
             const hoursSelect = document.getElementById("leave-hours");
             hoursSelect.innerHTML = '<option value="">-</option>';
             for (let i = 1; i <= 8; i += 0.5) {
-                let text = Number.isInteger(i) ? i + ' ช.ม.' : Math.floor(i) + ' 1/2 ช.ม.';
-                if (i === 8) text = "8 Hours";
+                let text = (i === 8) ? "8 Hours" : (Number.isInteger(i) ? i + ' ช.ม.' : Math.floor(i) + ' 1/2 ช.ม.');
                 hoursSelect.innerHTML += '<option value="' + i + '">' + text + '</option>';
             }
         }
 
         async function main() {
-            generateDropdownOptions(); // เรียกสร้างตัวเลือกตอนโหลดเว็บ
+            generateDropdownOptions(); 
             await liff.init({ liffId: liffId });
+            
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 document.getElementById("profile-info").innerText = "กำลังค้นหาข้อมูลพนักงาน...";
+                
+                // ดึงข้อมูลหลังบ้าน (เพิ่ม catch ป้องกันการค้าง)
                 fetch(scriptUrl + "?userId=" + profile.userId)
-                .then(r => r.json()).then(result => {
+                .then(r => r.json())
+                .then(result => {
                     if (result.holidays) companyHolidays = result.holidays;
                     if (result.userPastLeaves) userPastLeaves = result.userPastLeaves;
 
@@ -162,11 +162,18 @@
                         document.getElementById("profile-info").innerText = "พนักงาน: " + result.data.name;
                         document.getElementById("profile-info").style.color = "#00B900";
                     } else {
-                        document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (กรุณากรอกรหัสเอง)";
+                        document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (ไม่พบในระบบ กรุณากรอกรหัสเอง)";
                         document.getElementById("profile-info").style.color = "#ff3344";
                     }
+                })
+                .catch(err => {
+                    // ถ้าโหลดล้มเหลว (เช่น เปิดในคอมติด CORS) จะเลิกค้างและให้กรอกเองได้
+                    document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (ดึงข้อมูลไม่สำเร็จ กรุณากรอกรหัสเอง)";
+                    document.getElementById("profile-info").style.color = "#ff3344";
                 });
-            } else { liff.login(); }
+            } else { 
+                liff.login(); 
+            }
         }
 
         document.getElementById("start-date").addEventListener("change", function() {
@@ -227,11 +234,10 @@
                 showAlert("แจ้งเตือน", "กรุณากรอกข้อมูลวันที่และเหตุผลให้ครบถ้วน", false); return;
             }
 
-            // จัดการไฟล์แนบ
             const fileInput = document.getElementById("attachment");
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                if (file.size > 3 * 1024 * 1024) { // จำกัดไฟล์ 3MB
+                if (file.size > 3 * 1024 * 1024) { 
                     showAlert("แจ้งเตือน", "ขนาดไฟล์เอกสารใหญ่เกินไป (จำกัดไม่เกิน 3MB)", false); return;
                 }
                 data.fileName = file.name;
