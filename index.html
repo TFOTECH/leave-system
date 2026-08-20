@@ -26,16 +26,17 @@
             <input type="text" id="emp-id" placeholder="ระบุรหัสพนักงาน" required>
         </div>
 
+        <!-- 1. แก้ไขประเภทการลา ให้ส่งค่าเป็นตัวเลขตามที่กำหนด -->
         <div class="form-group">
             <label>ประเภทการลา (LeaveType)</label>
             <select id="leave-type" required style="color: #999;" onchange="this.style.color='#000';">
                 <option value="" disabled selected hidden>กรุณาเลือกประเภทการลา</option>
-                <option value="พักร้อน (Vacation)" style="color: #000;">พักร้อน (Vacation)</option>
-                <option value="ลาป่วย (Sick)" style="color: #000;">ลาป่วย (Sick)</option>
-                <option value="ลากิจ (Personel)" style="color: #000;">ลากิจ (Personel)</option>
-                <option value="กิจพิเศษ (Special)" style="color: #000;">กิจพิเศษ (Special)</option>
-                <option value="ลาสมรส (Marriage)" style="color: #000;">ลาสมรส (Marriage)</option>
-                <option value="ลาบวช (Ordination)" style="color: #000;">ลาบวช (Ordination)</option>
+                <option value="0" style="color: #000;">พักร้อน (Vacation)</option>
+                <option value="1" style="color: #000;">ลาป่วย (Sick)</option>
+                <option value="4" style="color: #000;">ลากิจ (Personel)</option>
+                <option value="8" style="color: #000;">กิจพิเศษ (Special)</option>
+                <option value="6" style="color: #000;">ลาสมรส (Marriage)</option>
+                <option value="3" style="color: #000;">ลาบวช (Ordination)</option>
             </select>
         </div>
 
@@ -44,12 +45,14 @@
             <input type="date" id="start-date" required>
         </div>
 
+        <!-- 2. แก้ไขรูปแบบการลา แยกครึ่งเช้า/บ่าย -->
         <div class="form-group">
             <label>รูปแบบการลา</label>
             <select id="start-type" onchange="toggleLeaveType()">
-                <option value="ตั้งแต่เช้า" selected>ตั้งแต่เช้า</option>
-                <option value="เริ่มครึ่งบ่าย">เริ่มครึ่งบ่าย</option>
-                <option value="ระบุเวลา">ระบุเวลา</option>
+                <option value="0" selected>ตั้งแต่เช้า</option>
+                <option value="1_am">ลาครึ่งวันเช้า</option>
+                <option value="1_pm">ลาครึ่งวันบ่าย</option>
+                <option value="2">ระบุเวลา</option>
             </select>
         </div>
 
@@ -123,7 +126,6 @@
 
         // สร้างตัวเลือก วัน และ ชั่วโมง
         function generateDropdownOptions() {
-            // วัน: 1/2 วัน ถึง 30 วัน
             const daysSelect = document.getElementById("leave-days");
             daysSelect.innerHTML = '<option value="">-</option>';
             for (let i = 0.5; i <= 30; i += 0.5) {
@@ -131,7 +133,6 @@
                 daysSelect.innerHTML += '<option value="' + i + '">' + text + '</option>';
             }
 
-            // ชั่วโมง: 1 ช.ม. ถึง 8 Hours
             const hoursSelect = document.getElementById("leave-hours");
             hoursSelect.innerHTML = '<option value="">-</option>';
             for (let i = 1; i <= 8; i += 0.5) {
@@ -148,7 +149,6 @@
                 const profile = await liff.getProfile();
                 document.getElementById("profile-info").innerText = "กำลังค้นหาข้อมูลพนักงาน...";
                 
-                // ดึงข้อมูลหลังบ้าน (เพิ่ม catch ป้องกันการค้าง)
                 fetch(scriptUrl + "?userId=" + profile.userId)
                 .then(r => r.json())
                 .then(result => {
@@ -167,7 +167,6 @@
                     }
                 })
                 .catch(err => {
-                    // ถ้าโหลดล้มเหลว (เช่น เปิดในคอมติด CORS) จะเลิกค้างและให้กรอกเองได้
                     document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (ดึงข้อมูลไม่สำเร็จ กรุณากรอกรหัสเอง)";
                     document.getElementById("profile-info").style.color = "#ff3344";
                 });
@@ -176,6 +175,7 @@
             }
         }
 
+        // 3. ระบบ Auto-fill เมื่อเลือก "วันที่เริ่มลา"
         document.getElementById("start-date").addEventListener("change", function() {
             const selectedDateStr = this.value;
             if (!selectedDateStr) return;
@@ -183,6 +183,8 @@
                 showAlert("แจ้งเตือน", "วันที่เลือกตรงกับวันหยุดบริษัท ไม่สามารถบันทึกการลาได้", false);
                 this.value = ""; return;
             }
+            
+            // เช็คลาย้อนหลัง
             const [y, m, d] = selectedDateStr.split("-");
             const selectedDate = new Date(y, m - 1, d);
             const today = new Date();
@@ -201,14 +203,35 @@
                 }
                 if (workingDaysCount >= 3) {
                     showAlert("แจ้งเตือนจากระบบ", "ไม่สามารถลาย้อนหลังเกิน 3 วันทำงานได้\n(ระบบได้หักลบวันหยุด และวันที่ลาไปแล้ว)", false);
-                    this.value = ""; 
+                    this.value = ""; return;
                 }
+            }
+
+            // ถ้าระบุวันที่ผ่าน จะเซ็ตจำนวนการลาให้ 1 วันอัตโนมัติ (เฉพาะเมื่อยังไม่ได้เลือกลาครึ่งวัน)
+            const st = document.getElementById("start-type").value;
+            if (st === "0" || st === "2") {
+                document.getElementById("leave-days").value = "1";
+                document.getElementById("leave-hours").value = "";
+                document.getElementById("leave-minutes").value = "";
             }
         });
 
+        // 4. ระบบ Auto-fill เมื่อเลือกรูปแบบการลา "ครึ่งวัน"
         function toggleLeaveType() {
             const type = document.getElementById("start-type").value;
-            document.getElementById("time-group").style.display = (type === "ระบุเวลา") ? "block" : "none";
+            document.getElementById("time-group").style.display = (type === "2") ? "block" : "none";
+            
+            if (type === "1_am" || type === "1_pm") {
+                // ถ้าเลือกครึ่งวันเช้า/บ่าย -> ลบวันทิ้ง แล้วเด้ง 4 ชั่วโมงให้ทันที
+                document.getElementById("leave-days").value = "";
+                document.getElementById("leave-hours").value = "4";
+                document.getElementById("leave-minutes").value = "";
+            } else if (type === "0" && document.getElementById("start-date").value !== "") {
+                // ถ้ากลับมาเลือกเต็มวัน และเคยใส่วันที่ไว้แล้ว -> เด้ง 1 วันให้เหมือนเดิม
+                document.getElementById("leave-days").value = "1";
+                document.getElementById("leave-hours").value = "";
+                document.getElementById("leave-minutes").value = "";
+            }
         }
 
         async function submitLeave() {
@@ -217,16 +240,46 @@
                 showAlert("แจ้งเตือน", "กรุณาเลือกประเภทการลา", false); return;
             }
 
+            // ตรวจสอบว่าต้องระบุจำนวนการลาอย่างน้อย 1 อย่าง (วัน, ชม, นาที) ถึงจะส่งได้
+            const leaveDaysVal = document.getElementById("leave-days").value;
+            const leaveHoursVal = document.getElementById("leave-hours").value;
+            const leaveMinutesVal = document.getElementById("leave-minutes").value;
+            if (!leaveDaysVal && !leaveHoursVal && !leaveMinutesVal) {
+                showAlert("แจ้งเตือน", "กรุณาระบุจำนวนการลา (วัน, ชั่วโมง, หรือนาที) ให้ถูกต้อง", false); return;
+            }
+
+            // 5. เตรียมซ่อนรูปค่า StartType และ StartTime แบบลับๆ
+            let actualStartType = "";
+            let actualStartTime = "";
+            const st = document.getElementById("start-type").value;
+            
+            if (st === "0") {
+                actualStartType = 0;
+                actualStartTime = ""; 
+            } else if (st === "1_am") {
+                actualStartType = 1;
+                actualStartTime = "08:00"; // แอบส่ง 08:00
+            } else if (st === "1_pm") {
+                actualStartType = 1;
+                actualStartTime = "13:00"; // แอบส่ง 13:00
+            } else if (st === "2") {
+                actualStartType = 2;
+                actualStartTime = document.getElementById("start-time").value;
+                if (!actualStartTime) {
+                    showAlert("แจ้งเตือน", "คุณเลือกแบบระบุเวลา กรุณาระบุเวลาที่เริ่มลาด้วยครับ", false); return;
+                }
+            }
+
             const data = {
                 userId: (await liff.getProfile()).userId,
                 empId: document.getElementById("emp-id").value,
                 startDate: document.getElementById("start-date").value,
-                startType: document.getElementById("start-type").value,
-                startTime: document.getElementById("start-time").value,
-                leaveDays: document.getElementById("leave-days").value,
-                leaveHours: document.getElementById("leave-hours").value,
-                leaveMinutes: document.getElementById("leave-minutes").value,
-                leaveType: leaveTypeVal,
+                startType: actualStartType,     // ส่ง 0, 1, 2
+                startTime: actualStartTime,     // ส่ง เวลา หรือค่าว่าง
+                leaveDays: leaveDaysVal,
+                leaveHours: leaveHoursVal,
+                leaveMinutes: leaveMinutesVal,
+                leaveType: leaveTypeVal,        // ส่ง 0, 1, 4, 8, 6, 3
                 reason: document.getElementById("reason").value
             };
 
