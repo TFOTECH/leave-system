@@ -32,6 +32,27 @@
         const liffId = "2011138589-9XOYDjAu"; 
         const scriptUrl = "https://script.google.com/macros/s/AKfycbyJUZqnVMbzPOT9syPjTxfTCHczihlDlLlVHsy9JjAhqeo0oI97KAkCAVsV-3UwJAnx7Q/exec"; 
 
+        // ==========================================
+        // ฟังก์ชันแปลงทศนิยมเป็น วัน ชั่วโมง นาที
+        // ==========================================
+        function formatDaysToText(decimalDays) {
+            if (!decimalDays || decimalDays === 0) return "0 วัน";
+            
+            // กำหนดให้ 1 วัน = 8 ชั่วโมง
+            var totalHours = decimalDays * 8; 
+            var days = Math.floor(totalHours / 8);
+            var remainingHours = totalHours % 8;
+            var hours = Math.floor(remainingHours);
+            var minutes = Math.round((remainingHours - hours) * 60);
+            
+            var result = "";
+            if (days > 0) result += days + " วัน ";
+            if (hours > 0) result += hours + " ชั่วโมง ";
+            if (minutes > 0) result += minutes + " นาที";
+            
+            return result.trim() === "" ? "0 วัน" : result.trim();
+        }
+
         async function initCheckLeave() {
             try {
                 await liff.init({ liffId: liffId });
@@ -65,16 +86,16 @@
                             innerHtml = `
                                 <div class="row">
                                     <span>ใช้ไปแล้ว:</span> 
-                                    <span class="used-only">${item.used} วัน</span>
+                                    <span class="used-only">${formatDaysToText(item.used)}</span>
                                 </div>
                             `;
                         } 
                         // ถ้ามียอดโควต้า ให้โชว์ สิทธิ์ทั้งหมด > ใช้ไป > คงเหลือ
                         else {
                             innerHtml = `
-                                <div class="row"><span>สิทธิ์ทั้งหมด:</span> <span>${item.quota} วัน</span></div>
-                                <div class="row"><span>ใช้ไปแล้ว:</span> <span>${item.used} วัน</span></div>
-                                <div class="row remain"><span>คงเหลือ:</span> <span>${item.remain} วัน</span></div>
+                                <div class="row"><span>สิทธิ์ทั้งหมด:</span> <span>${formatDaysToText(item.quota)}</span></div>
+                                <div class="row"><span>ใช้ไปแล้ว:</span> <span>${formatDaysToText(item.used)}</span></div>
+                                <div class="row remain"><span>คงเหลือ:</span> <span>${formatDaysToText(item.remain)}</span></div>
                             `;
                         }
 
