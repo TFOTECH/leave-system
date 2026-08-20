@@ -93,6 +93,7 @@
         <button type="button" id="main-submit-btn" onclick="previewLeave()">ส่งคำขอลา</button>
     </form>
 
+    <!-- กล่องแจ้งเตือน (Error/Success) -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
         <div style="background:white; padding:25px; border-radius:12px; text-align:center; max-width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
             <h3 id="alert-title" style="margin-top:0; color:#28a745;">ระบบแจ้งเตือน</h3>
@@ -101,6 +102,7 @@
         </div>
     </div>
 
+    <!-- กล่องยืนยันข้อมูลก่อนส่ง (Confirmation Modal) -->
     <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9998;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:85%; width:400px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:#0056b3; text-align:center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🔍 ตรวจสอบข้อมูลการลา</h3>
@@ -121,7 +123,7 @@
         let isLeaveSuccess = false;
         let companyHolidays = [];
         let userPastLeaves = [];
-        let emergencyVacCount = 0; // เก็บจำนวนพักร้อนฉุกเฉินที่ใช้ไป
+        let emergencyVacCount = 0; 
         let pendingSubmitData = null;
 
         function showAlert(title, message, isSuccess) {
@@ -191,15 +193,13 @@
             }
         }
 
-        // รวมการตรวจสอบทั้งหมดไว้ในฟังก์ชันเดียว ให้เรียกตอนเปลี่ยนประเภทลา หรือ วันที่
         function checkLeaveRules() {
             const startDateInput = document.getElementById("start-date");
             const leaveTypeVal = document.getElementById("leave-type").value;
             const selectedDateStr = startDateInput.value;
             
-            if (!selectedDateStr) return; // ถ้ายังไม่เลือกวัน ให้ข้ามไป
+            if (!selectedDateStr) return; 
             
-            // 1. เช็ควันหยุดบริษัท
             if (companyHolidays.includes(selectedDateStr)) {
                 showAlert("แจ้งเตือน", "วันที่เลือกตรงกับวันหยุดบริษัท\nไม่สามารถบันทึกการลาได้", false);
                 startDateInput.value = ""; return;
@@ -210,7 +210,6 @@
             const today = new Date();
             today.setHours(0,0,0,0);
 
-            // 2. เช็คลาย้อนหลัง (ไม่เกิน 3 วันทำงาน)
             if (selectedDate < today) {
                 let workingDaysCount = 0;
                 let currentDate = new Date(selectedDate);
@@ -228,21 +227,20 @@
                 }
             }
 
-            // 3. ระบบใหม่: เช็คพักร้อนล่วงหน้า 3 วัน & พักร้อนฉุกเฉิน
             if (leaveTypeVal === "0") {
                 const diffTime = selectedDate - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
-                // ถ้าน้อยกว่า 3 วัน (นับวันนี้เป็นวันที่ 1)
                 if (diffDays < 3) {
                     if (emergencyVacCount >= 2) {
-                        showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\n\nการลาพักร้อนปกติต้องลาล่วงหน้าอย่างน้อย 3 วัน\n(เช่น วันนี้วันที่ 17 จะเริ่มลาได้วันที่ 20 เป็นต้นไป)", false);
-                        startDateInput.value = ""; return;
+                        // แจ้งเตือนและบล็อกทันที
+                        showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
+                        startDateInput.value = ""; 
+                        return;
                     }
                 }
             }
 
-            // 4. Auto-fill 1 วัน (ถ้าผ่านเงื่อนไข)
             const st = document.getElementById("start-type").value;
             if (st === "0") {
                 document.getElementById("leave-days").value = "1";
@@ -295,6 +293,32 @@
                 showAlert("แจ้งเตือน", "กรุณาเลือกประเภทการลา", false); return;
             }
 
+            const startDateVal = document.getElementById("start-date").value;
+            if (!startDateVal) {
+                showAlert("แจ้งเตือน", "กรุณาเลือกวันที่เริ่มลา", false); return;
+            }
+
+            // --- ดักจับความปลอดภัยชั้นที่ 2 (ป้องกันคนกดทะลุ) ---
+            let emergencyWarningHtml = "";
+            if (leaveTypeVal === "0") {
+                const [y, m, d] = startDateVal.split("-");
+                const selectedDate = new Date(y, m - 1, d);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const diffTime = selectedDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 3) {
+                    if (emergencyVacCount >= 2) {
+                        // บล็อกเด็ดขาด ไม่ยอมให้เปิดหน้าต่างยืนยัน
+                        showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
+                        return; 
+                    } else {
+                        emergencyWarningHtml = `<br><span style="color:#ff3344; font-size:14px;">⚠️ เป็นการใช้สิทธิ์พักร้อนฉุกเฉิน (คงเหลือ ${2 - emergencyVacCount} ครั้งในปีนี้)</span>`;
+                    }
+                }
+            }
+
             const leaveDaysVal = document.getElementById("leave-days").value;
             const leaveHoursVal = document.getElementById("leave-hours").value;
             const leaveMinutesVal = document.getElementById("leave-minutes").value;
@@ -324,26 +348,10 @@
             }
 
             const empIdVal = document.getElementById("emp-id").value;
-            const startDateVal = document.getElementById("start-date").value;
             const reasonVal = document.getElementById("reason").value;
 
-            if (!empIdVal || !startDateVal || !reasonVal) {
-                showAlert("แจ้งเตือน", "กรุณากรอกข้อมูลวันที่และเหตุผลให้ครบถ้วน", false); return;
-            }
-
-            // เช็คและเพิ่มข้อความแจ้งเตือนถ้าเป็นการใช้ "พักร้อนฉุกเฉิน"
-            let emergencyWarningHtml = "";
-            if (leaveTypeVal === "0") {
-                const [y, m, d] = startDateVal.split("-");
-                const selectedDate = new Date(y, m - 1, d);
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const diffTime = selectedDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays < 3) {
-                    emergencyWarningHtml = `<br><span style="color:#ff3344; font-size:14px;">⚠️ เป็นการใช้สิทธิ์พักร้อนฉุกเฉิน (คงเหลือ ${1 - emergencyVacCount} ครั้งในปีนี้)</span>`;
-                }
+            if (!empIdVal || !reasonVal) {
+                showAlert("แจ้งเตือน", "กรุณากรอกข้อมูลและเหตุผลให้ครบถ้วน", false); return;
             }
 
             pendingSubmitData = {
