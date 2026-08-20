@@ -93,6 +93,7 @@
         <button type="button" id="main-submit-btn" onclick="previewLeave()">ส่งคำขอลา</button>
     </form>
 
+    <!-- กล่องแจ้งเตือน (Error/Success) -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
         <div style="background:white; padding:25px; border-radius:12px; text-align:center; max-width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
             <h3 id="alert-title" style="margin-top:0; color:#28a745;">ระบบแจ้งเตือน</h3>
@@ -101,12 +102,11 @@
         </div>
     </div>
 
+    <!-- กล่องยืนยันข้อมูลก่อนส่ง -->
     <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9998;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:85%; width:400px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:#0056b3; text-align:center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🔍 ตรวจสอบข้อมูลการลา</h3>
-            <div id="confirm-details" style="color:#333; margin-bottom:20px; font-size:15px; line-height:1.8;">
-                <!-- ข้อมูลสรุปจะถูกแทรกที่นี่ -->
-            </div>
+            <div id="confirm-details" style="color:#333; margin-bottom:20px; font-size:15px; line-height:1.8;"></div>
             <div style="display:flex; gap:10px;">
                 <button onclick="closeConfirmModal()" style="background:#6c757d; color:white; border:none; padding:12px; border-radius:5px; font-size:15px; cursor:pointer; width:50%; margin-top:0;">กลับไปแก้ไข</button>
                 <button onclick="confirmSubmitLeave()" style="background:#00B900; color:white; border:none; padding:12px; border-radius:5px; font-size:15px; cursor:pointer; width:50%; margin-top:0;">✅ ยืนยันส่งคำขอ</button>
@@ -122,6 +122,7 @@
         let companyHolidays = [];
         let userPastLeaves = [];
         let emergencyVacCount = 0; 
+        let specialLeaveUsed = 0; // ตัวแปรเก็บจำนวนลากิจพิเศษที่ใช้ไปแล้ว
         let pendingSubmitData = null;
 
         function showAlert(title, message, isSuccess) {
@@ -170,6 +171,7 @@
                     if (result.holidays) companyHolidays = result.holidays;
                     if (result.userPastLeaves) userPastLeaves = result.userPastLeaves;
                     if (result.emergencyVacCount !== undefined) emergencyVacCount = result.emergencyVacCount;
+                    if (result.specialLeaveUsed !== undefined) specialLeaveUsed = result.specialLeaveUsed; // รับข้อมูลลากิจพิเศษ
 
                     if (result.status === "success") {
                         document.getElementById("emp-id").value = result.data.empId;
@@ -196,6 +198,15 @@
             const leaveTypeVal = document.getElementById("leave-type").value;
             const selectedDateStr = startDateInput.value;
             
+            // เช็คสิทธิ์ลากิจพิเศษล่วงหน้า (ถ้าสิทธิ์เป็น 0 จะไม่ให้เลือก)
+            if (leaveTypeVal === "9") {
+                if (specialLeaveUsed >= 3) {
+                    showAlert("แจ้งเตือน", "❌ สิทธิ์ลากิจพิเศษของคุณถูกใช้ครบ 3 วัน/ปี แล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
+                    document.getElementById("leave-type").value = ""; 
+                    return;
+                }
+            }
+
             if (!selectedDateStr) return; 
             
             if (companyHolidays.includes(selectedDateStr)) {
@@ -225,6 +236,7 @@
                 }
             }
 
+            // ระบบใหม่: เช็คพักร้อนฉุกเฉิน
             if (leaveTypeVal === "0") {
                 const diffTime = selectedDate - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -295,7 +307,24 @@
                 showAlert("แจ้งเตือน", "กรุณาเลือกวันที่เริ่มลา", false); return;
             }
 
-            let emergencyWarningHtml = "";
+            const leaveDaysVal = document.getElementById("leave-days").value;
+            const leaveHoursVal = document.getElementById("leave-hours").value;
+            const leaveMinutesVal = document.getElementById("leave-minutes").value;
+            
+            if (!leaveDaysVal && !leaveHoursVal && !leaveMinutesVal) {
+                showAlert("แจ้งเตือน", "กรุณาระบุจำนวนการลา (วัน, ชั่วโมง, หรือนาที) ให้ถูกต้อง", false); return;
+            }
+
+            // คำนวณจำนวนวันที่ขอลารวมเป็นวันเต็ม (เพื่อง่ายต่อการเปรียบเทียบ)
+            const reqDays = parseFloat(leaveDaysVal) || 0;
+            const reqHours = parseFloat(leaveHoursVal) || 0;
+            const reqMins = parseFloat(leaveMinutesVal) || 0;
+            const totalReq = reqDays + (reqHours / 8) + (reqMins / 480);
+
+            // --- ดักจับความปลอดภัยชั้นที่ 2 ---
+            let extraWarningHtml = "";
+            
+            // กฎของพักร้อน
             if (leaveTypeVal === "0") {
                 const [y, m, d] = startDateVal.split("-");
                 const selectedDate = new Date(y, m - 1, d);
@@ -309,16 +338,20 @@
                         showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
                         return; 
                     } else {
-                        emergencyWarningHtml = `<br><span style="color:#ff3344; font-size:14px;">⚠️ เป็นการใช้สิทธิ์พักร้อนฉุกเฉิน (คงเหลือ ${2 - emergencyVacCount} ครั้งในปีนี้)</span>`;
+                        extraWarningHtml = `<br><span style="color:#ff3344; font-size:14px;">⚠️ เป็นการใช้สิทธิ์พักร้อนฉุกเฉิน (คงเหลือ ${2 - emergencyVacCount} ครั้งในปีนี้)</span>`;
                     }
                 }
             }
 
-            const leaveDaysVal = document.getElementById("leave-days").value;
-            const leaveHoursVal = document.getElementById("leave-hours").value;
-            const leaveMinutesVal = document.getElementById("leave-minutes").value;
-            if (!leaveDaysVal && !leaveHoursVal && !leaveMinutesVal) {
-                showAlert("แจ้งเตือน", "กรุณาระบุจำนวนการลา (วัน, ชั่วโมง, หรือนาที) ให้ถูกต้อง", false); return;
+            // กฎของลากิจพิเศษ (ห้ามเกิน 3 วัน/ปี)
+            if (leaveTypeVal === "9") {
+                if (specialLeaveUsed + totalReq > 3) {
+                    showAlert("แจ้งเตือน", `❌ สิทธิ์ลากิจพิเศษเกินกำหนด\nคุณใช้ไปแล้ว ${specialLeaveUsed} วัน (จากสิทธิ์ 3 วัน/ปี)\nจึงไม่สามารถลาเพิ่มอีก ${totalReq} วันได้ครับ`, false);
+                    return;
+                } else {
+                    const remainDays = 3 - specialLeaveUsed - totalReq;
+                    extraWarningHtml = `<br><span style="color:#007bff; font-size:14px;">ℹ️ ใช้สิทธิ์ลากิจพิเศษ (คงเหลือ ${remainDays} วัน ในปีนี้)</span>`;
+                }
             }
 
             let actualStartType = "";
@@ -371,7 +404,7 @@
 
             const summaryHtml = `
                 <b>รหัสพนักงาน:</b> ${empIdVal}<br>
-                <b>ประเภทการลา:</b> <span style="color:#00B900;">${getLeaveTypeName(leaveTypeVal)}</span>${emergencyWarningHtml}<br>
+                <b>ประเภทการลา:</b> <span style="color:#00B900;">${getLeaveTypeName(leaveTypeVal)}</span>${extraWarningHtml}<br>
                 <b>วันที่เริ่มลา:</b> ${formatDateThai(startDateVal)}<br>
                 <b>รูปแบบการลา:</b> ${getStartTypeName(st, actualStartTime)}<br>
                 <b>จำนวนการลา:</b> ${durationText}<br>
