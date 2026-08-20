@@ -10,6 +10,8 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
         input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        /* สไตล์สำหรับช่องที่ถูกล็อก (Disabled) */
+        select:disabled, input:disabled { background-color: #e9ecef; color: #999; cursor: not-allowed; border-color: #ddd; }
         button { width: 100%; padding: 12px; background-color: #00B900; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .duration-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .duration-item { display: flex; align-items: center; gap: 5px; }
@@ -198,6 +200,17 @@
             const leaveTypeVal = document.getElementById("leave-type").value;
             const selectedDateStr = startDateInput.value;
             
+            // ==========================================
+            // ระบบล็อกช่อง "นาที" อัตโนมัติถ้าเลือก "พักร้อน"
+            // ==========================================
+            const minSelect = document.getElementById("leave-minutes");
+            if (leaveTypeVal === "0") {
+                minSelect.value = "";
+                minSelect.disabled = true; // ล็อกไม่ให้กด
+            } else {
+                minSelect.disabled = false; // ปลดล็อก
+            }
+
             if (leaveTypeVal === "9") {
                 if (quotaSpecial <= 0) {
                     showAlert("แจ้งเตือน", "ไม่มีสิทธิ์ใช้ลากิจพิเศษได้\nเนื่องจากคุณสมบัติไม่ผ่านเกณฑ์", false);
@@ -323,17 +336,12 @@
             const reqMins = parseFloat(leaveMinutesVal) || 0;
             const totalReq = reqDays + (reqHours / 8) + (reqMins / 480);
 
-            // ==========================================
-            // กฎใหม่: เช็คว่าการลาพักร้อนต้องลาเต็มชั่วโมง และขั้นต่ำ 4 ชั่วโมง
-            // ==========================================
             if (leaveTypeVal === "0") {
-                // เช็คว่ามีเศษนาที (reqMins > 0) หรือเศษชั่วโมง (เช่น 1.5 ชม.) หรือไม่
                 if (reqMins > 0 || reqHours % 1 !== 0) {
                     showAlert("แจ้งเตือน", "❌ การลาพักร้อนต้องระบุเวลาเป็น 'หน่วยเต็มชั่วโมง' เท่านั้น\n(ไม่อนุญาตให้มีเศษนาที หรือเศษชั่วโมง เช่น 1.5 ช.ม.)", false);
                     return;
                 }
 
-                // แปลงวันเป็นชั่วโมงเพื่อรวมยอด (1 วัน = 8 ชั่วโมง)
                 const totalHrs = (reqDays * 8) + reqHours;
                 if (totalHrs < 4) {
                     showAlert("แจ้งเตือน", "❌ การลาพักร้อนต้องลาขั้นต่ำครึ่งวัน (4 ชั่วโมง) ขึ้นไป", false);
