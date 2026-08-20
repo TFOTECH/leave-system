@@ -93,7 +93,6 @@
         <button type="button" id="main-submit-btn" onclick="previewLeave()">ส่งคำขอลา</button>
     </form>
 
-    <!-- กล่องแจ้งเตือน (Error/Success) -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
         <div style="background:white; padding:25px; border-radius:12px; text-align:center; max-width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
             <h3 id="alert-title" style="margin-top:0; color:#28a745;">ระบบแจ้งเตือน</h3>
@@ -102,7 +101,6 @@
         </div>
     </div>
 
-    <!-- กล่องยืนยันข้อมูลก่อนส่ง -->
     <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9998;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:85%; width:400px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:#0056b3; text-align:center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🔍 ตรวจสอบข้อมูลการลา</h3>
@@ -122,7 +120,8 @@
         let companyHolidays = [];
         let userPastLeaves = [];
         let emergencyVacCount = 0; 
-        let specialLeaveUsed = 0; // ตัวแปรเก็บจำนวนลากิจพิเศษที่ใช้ไปแล้ว
+        let specialLeaveUsed = 0; 
+        let quotaSpecial = 0; // เพิ่มตัวแปรเก็บสิทธิ์ลากิจพิเศษจากชีต
         let pendingSubmitData = null;
 
         function showAlert(title, message, isSuccess) {
@@ -171,7 +170,7 @@
                     if (result.holidays) companyHolidays = result.holidays;
                     if (result.userPastLeaves) userPastLeaves = result.userPastLeaves;
                     if (result.emergencyVacCount !== undefined) emergencyVacCount = result.emergencyVacCount;
-                    if (result.specialLeaveUsed !== undefined) specialLeaveUsed = result.specialLeaveUsed; // รับข้อมูลลากิจพิเศษ
+                    if (result.specialLeaveUsed !== undefined) specialLeaveUsed = result.specialLeaveUsed;
 
                     if (result.status === "success") {
                         document.getElementById("emp-id").value = result.data.empId;
@@ -179,6 +178,9 @@
                         document.getElementById("emp-id").style.backgroundColor = "#e9ecef";
                         document.getElementById("profile-info").innerText = "พนักงาน: " + result.data.name;
                         document.getElementById("profile-info").style.color = "#00B900";
+                        
+                        // เก็บโควตาลากิจพิเศษที่ดึงมาจากชีต
+                        quotaSpecial = result.data.quotaSpecial || 0;
                     } else {
                         document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (ไม่พบในระบบ กรุณากรอกรหัสเอง)";
                         document.getElementById("profile-info").style.color = "#ff3344";
@@ -198,10 +200,15 @@
             const leaveTypeVal = document.getElementById("leave-type").value;
             const selectedDateStr = startDateInput.value;
             
-            // เช็คสิทธิ์ลากิจพิเศษล่วงหน้า (ถ้าสิทธิ์เป็น 0 จะไม่ให้เลือก)
+            // เช็คสิทธิ์ลากิจพิเศษ
             if (leaveTypeVal === "9") {
-                if (specialLeaveUsed >= 3) {
-                    showAlert("แจ้งเตือน", "❌ สิทธิ์ลากิจพิเศษของคุณถูกใช้ครบ 3 วัน/ปี แล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
+                if (quotaSpecial <= 0) {
+                    showAlert("แจ้งเตือน", "ไม่มีสิทธิ์ใช้ลากิจพิเศษได้\nเนื่องจากคุณสมบัติไม่ผ่านเกณฑ์", false);
+                    document.getElementById("leave-type").value = ""; 
+                    return;
+                }
+                if (specialLeaveUsed >= quotaSpecial) {
+                    showAlert("แจ้งเตือน", `❌ สิทธิ์ลากิจพิเศษของคุณถูกใช้ครบ ${quotaSpecial} วัน/ปี แล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น`, false);
                     document.getElementById("leave-type").value = ""; 
                     return;
                 }
@@ -236,7 +243,6 @@
                 }
             }
 
-            // ระบบใหม่: เช็คพักร้อนฉุกเฉิน
             if (leaveTypeVal === "0") {
                 const diffTime = selectedDate - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -315,16 +321,13 @@
                 showAlert("แจ้งเตือน", "กรุณาระบุจำนวนการลา (วัน, ชั่วโมง, หรือนาที) ให้ถูกต้อง", false); return;
             }
 
-            // คำนวณจำนวนวันที่ขอลารวมเป็นวันเต็ม (เพื่อง่ายต่อการเปรียบเทียบ)
             const reqDays = parseFloat(leaveDaysVal) || 0;
             const reqHours = parseFloat(leaveHoursVal) || 0;
             const reqMins = parseFloat(leaveMinutesVal) || 0;
             const totalReq = reqDays + (reqHours / 8) + (reqMins / 480);
 
-            // --- ดักจับความปลอดภัยชั้นที่ 2 ---
             let extraWarningHtml = "";
             
-            // กฎของพักร้อน
             if (leaveTypeVal === "0") {
                 const [y, m, d] = startDateVal.split("-");
                 const selectedDate = new Date(y, m - 1, d);
@@ -343,13 +346,16 @@
                 }
             }
 
-            // กฎของลากิจพิเศษ (ห้ามเกิน 3 วัน/ปี)
             if (leaveTypeVal === "9") {
-                if (specialLeaveUsed + totalReq > 3) {
-                    showAlert("แจ้งเตือน", `❌ สิทธิ์ลากิจพิเศษเกินกำหนด\nคุณใช้ไปแล้ว ${specialLeaveUsed} วัน (จากสิทธิ์ 3 วัน/ปี)\nจึงไม่สามารถลาเพิ่มอีก ${totalReq} วันได้ครับ`, false);
+                if (quotaSpecial <= 0) {
+                    showAlert("แจ้งเตือน", "ไม่มีสิทธิ์ใช้ลากิจพิเศษได้\nเนื่องจากคุณสมบัติไม่ผ่านเกณฑ์", false);
+                    return;
+                }
+                if (specialLeaveUsed + totalReq > quotaSpecial) {
+                    showAlert("แจ้งเตือน", `❌ สิทธิ์ลากิจพิเศษเกินกำหนด\nคุณใช้ไปแล้ว ${specialLeaveUsed} วัน (จากสิทธิ์ ${quotaSpecial} วัน/ปี)\nจึงไม่สามารถลาเพิ่มอีก ${totalReq} วันได้ครับ`, false);
                     return;
                 } else {
-                    const remainDays = 3 - specialLeaveUsed - totalReq;
+                    const remainDays = quotaSpecial - specialLeaveUsed - totalReq;
                     extraWarningHtml = `<br><span style="color:#007bff; font-size:14px;">ℹ️ ใช้สิทธิ์ลากิจพิเศษ (คงเหลือ ${remainDays} วัน ในปีนี้)</span>`;
                 }
             }
