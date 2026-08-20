@@ -32,8 +32,8 @@
                 <option value="" disabled selected hidden>กรุณาเลือกประเภทการลา</option>
                 <option value="0" style="color: #000;">พักร้อน (Vacation)</option>
                 <option value="1" style="color: #000;">ลาป่วย (Sick)</option>
-                <option value="4" style="color: #000;">ลากิจ (Personel)</option>
-                <option value="8" style="color: #000;">กิจพิเศษ (Special)</option>
+                <option value="5" style="color: #000;">ลากิจ (Personel)</option>
+                <option value="9" style="color: #000;">ลากิจพิเศษ (Special)</option>
                 <option value="6" style="color: #000;">ลาสมรส (Marriage)</option>
                 <option value="3" style="color: #000;">ลาบวช (Ordination)</option>
             </select>
@@ -93,7 +93,6 @@
         <button type="button" id="main-submit-btn" onclick="previewLeave()">ส่งคำขอลา</button>
     </form>
 
-    <!-- กล่องแจ้งเตือน (Error/Success) -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
         <div style="background:white; padding:25px; border-radius:12px; text-align:center; max-width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
             <h3 id="alert-title" style="margin-top:0; color:#28a745;">ระบบแจ้งเตือน</h3>
@@ -102,7 +101,6 @@
         </div>
     </div>
 
-    <!-- กล่องยืนยันข้อมูลก่อนส่ง (Confirmation Modal) -->
     <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9998;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:85%; width:400px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:#0056b3; text-align:center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🔍 ตรวจสอบข้อมูลการลา</h3>
@@ -233,7 +231,6 @@
                 
                 if (diffDays < 3) {
                     if (emergencyVacCount >= 2) {
-                        // แจ้งเตือนและบล็อกทันที
                         showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
                         startDateInput.value = ""; 
                         return;
@@ -269,7 +266,7 @@
         }
 
         function getLeaveTypeName(val) {
-            const types = { '0': 'พักร้อน (Vacation)', '1': 'ลาป่วย (Sick)', '4': 'ลากิจ (Personel)', '8': 'กิจพิเศษ (Special)', '6': 'ลาสมรส (Marriage)', '3': 'ลาบวช (Ordination)' };
+            const types = { '0': 'พักร้อน (Vacation)', '1': 'ลาป่วย (Sick)', '5': 'ลากิจ (Personel)', '9': 'ลากิจพิเศษ (Special)', '6': 'ลาสมรส (Marriage)', '3': 'ลาบวช (Ordination)' };
             return types[val] || "-";
         }
         
@@ -298,7 +295,6 @@
                 showAlert("แจ้งเตือน", "กรุณาเลือกวันที่เริ่มลา", false); return;
             }
 
-            // --- ดักจับความปลอดภัยชั้นที่ 2 (ป้องกันคนกดทะลุ) ---
             let emergencyWarningHtml = "";
             if (leaveTypeVal === "0") {
                 const [y, m, d] = startDateVal.split("-");
@@ -310,7 +306,6 @@
                 
                 if (diffDays < 3) {
                     if (emergencyVacCount >= 2) {
-                        // บล็อกเด็ดขาด ไม่ยอมให้เปิดหน้าต่างยืนยัน
                         showAlert("แจ้งเตือน", "❌ สิทธิ์พักร้อนฉุกเฉินใช้ครบ 2 ครั้ง/ปีแล้ว\nกรุณาใช้สิทธิ์การลาประเภทอื่น", false);
                         return; 
                     } else {
