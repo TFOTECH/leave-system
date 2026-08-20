@@ -90,7 +90,6 @@
             <input type="text" id="reason" placeholder="ระบุเหตุผลให้ชัดเจน" required>
         </div>
         
-        <!-- เปลี่ยนจาก submitLeave() เป็น previewLeave() เพื่อเปิดหน้าต่างสรุปข้อมูลก่อน -->
         <button type="button" id="main-submit-btn" onclick="previewLeave()">ส่งคำขอลา</button>
     </form>
 
@@ -118,14 +117,13 @@
     </div>
 
     <script>
+        // ใส่รหัสของคุณอัตโนมัติแล้วครับ!
         const liffId = "2011138589-EQQGzszv"; 
         const scriptUrl = "https://script.google.com/macros/s/AKfycbyJUZqnVMbzPOT9syPjTxfTCHczihlDlLlVHsy9JjAhqeo0oI97KAkCAVsV-3UwJAnx7Q/exec"; 
         
         let isLeaveSuccess = false;
         let companyHolidays = [];
         let userPastLeaves = [];
-        
-        // ตัวแปรเก็บข้อมูลเตรียมส่ง
         let pendingSubmitData = null;
 
         function showAlert(title, message, isSuccess) {
@@ -197,8 +195,10 @@
         document.getElementById("start-date").addEventListener("change", function() {
             const selectedDateStr = this.value;
             if (!selectedDateStr) return;
+            
             if (companyHolidays.includes(selectedDateStr)) {
-                showAlert("แจ้งเตือน", "วันที่เลือกตรงกับวันหยุดบริษัท ไม่สามารถบันทึกการลาได้", false);
+                // แก้ข้อ 1: ใช้ \n เพื่อปัด "ไม่สามารถบันทึกการลาได้" ลงมาบรรทัดใหม่
+                showAlert("แจ้งเตือน", "วันที่เลือกตรงกับวันหยุดบริษัท\nไม่สามารถบันทึกการลาได้", false);
                 this.value = ""; return;
             }
             
@@ -251,25 +251,27 @@
             }
         }
 
-        // --- ระบบแปลงตัวเลขเป็นข้อความสำหรับโชว์ในหน้าต่างยืนยัน ---
         function getLeaveTypeName(val) {
             const types = { '0': 'พักร้อน (Vacation)', '1': 'ลาป่วย (Sick)', '4': 'ลากิจ (Personel)', '8': 'กิจพิเศษ (Special)', '6': 'ลาสมรส (Marriage)', '3': 'ลาบวช (Ordination)' };
             return types[val] || "-";
         }
+        
+        // แก้ข้อ 2: เอาเวลากำกับออกให้เหลือแค่รูปแบบการลาเพียวๆ
         function getStartTypeName(val, time) {
             if (val === "0") return "ตั้งแต่เช้า";
-            if (val === "1_am") return "ครึ่งวันเช้า (08:00 น.)";
-            if (val === "1_pm") return "ครึ่งวันบ่าย (13:00 น.)";
-            if (val === "2") return "ระบุเวลา (" + time + " น.)";
+            if (val === "1_am") return "ครึ่งวันเช้า";
+            if (val === "1_pm") return "ครึ่งวันบ่าย";
+            if (val === "2") return "ระบุเวลา";
             return "-";
         }
+        
+        // แปลงรูปแบบวันที่โชว์ในหน้าต่างยืนยันเป็น DD/MM/YYYY
         function formatDateThai(dateStr) {
             if(!dateStr) return "-";
             const [y, m, d] = dateStr.split("-");
             return `${d}/${m}/${y}`;
         }
 
-        // --- ฟังก์ชัน 1: ตรวจสอบและแสดงหน้าต่างสรุปข้อมูล ---
         async function previewLeave() {
             const leaveTypeVal = document.getElementById("leave-type").value;
             if (!leaveTypeVal) {
@@ -312,7 +314,6 @@
                 showAlert("แจ้งเตือน", "กรุณากรอกข้อมูลวันที่และเหตุผลให้ครบถ้วน", false); return;
             }
 
-            // เก็บข้อมูลเตรียมส่งไว้ในตัวแปร Global
             pendingSubmitData = {
                 empId: empIdVal,
                 startDate: startDateVal,
@@ -325,7 +326,6 @@
                 reason: reasonVal
             };
 
-            // สร้างข้อความสรุปเพื่อแสดงผล
             let durationText = "";
             if(leaveDaysVal) durationText += `${leaveDaysVal} วัน `;
             if(leaveHoursVal) durationText += `${leaveHoursVal} ช.ม. `;
@@ -348,19 +348,16 @@
             document.getElementById("confirm-modal").style.display = "flex";
         }
 
-        // --- ฟังก์ชัน 2: ส่งข้อมูลจริงเมื่อกดยืนยัน ---
         async function confirmSubmitLeave() {
-            closeConfirmModal(); // ปิดหน้าต่างสรุป
+            closeConfirmModal(); 
             
             const btn = document.getElementById("main-submit-btn");
             btn.innerText = "กำลังส่งข้อมูล (อาจใช้เวลาสักครู่)..."; 
             btn.disabled = true;
 
             try {
-                // เพิ่ม userId ในวินาทีสุดท้ายก่อนส่ง
                 pendingSubmitData.userId = (await liff.getProfile()).userId;
 
-                // จัดการไฟล์แนบ
                 const fileInput = document.getElementById("attachment");
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
@@ -379,7 +376,6 @@
                     });
                 }
                 
-                // ส่งข้อมูล
                 const r = await fetch(scriptUrl, { method: 'POST', body: JSON.stringify(pendingSubmitData) });
                 const result = await r.json();
 
