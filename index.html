@@ -121,7 +121,7 @@
         let userPastLeaves = [];
         let emergencyVacCount = 0; 
         let specialLeaveUsed = 0; 
-        let quotaSpecial = 0; // เพิ่มตัวแปรเก็บสิทธิ์ลากิจพิเศษจากชีต
+        let quotaSpecial = 0; 
         let pendingSubmitData = null;
 
         function showAlert(title, message, isSuccess) {
@@ -178,8 +178,6 @@
                         document.getElementById("emp-id").style.backgroundColor = "#e9ecef";
                         document.getElementById("profile-info").innerText = "พนักงาน: " + result.data.name;
                         document.getElementById("profile-info").style.color = "#00B900";
-                        
-                        // เก็บโควตาลากิจพิเศษที่ดึงมาจากชีต
                         quotaSpecial = result.data.quotaSpecial || 0;
                     } else {
                         document.getElementById("profile-info").innerText = "พนักงาน: " + profile.displayName + " (ไม่พบในระบบ กรุณากรอกรหัสเอง)";
@@ -200,7 +198,6 @@
             const leaveTypeVal = document.getElementById("leave-type").value;
             const selectedDateStr = startDateInput.value;
             
-            // เช็คสิทธิ์ลากิจพิเศษ
             if (leaveTypeVal === "9") {
                 if (quotaSpecial <= 0) {
                     showAlert("แจ้งเตือน", "ไม่มีสิทธิ์ใช้ลากิจพิเศษได้\nเนื่องจากคุณสมบัติไม่ผ่านเกณฑ์", false);
@@ -325,6 +322,24 @@
             const reqHours = parseFloat(leaveHoursVal) || 0;
             const reqMins = parseFloat(leaveMinutesVal) || 0;
             const totalReq = reqDays + (reqHours / 8) + (reqMins / 480);
+
+            // ==========================================
+            // กฎใหม่: เช็คว่าการลาพักร้อนต้องลาเต็มชั่วโมง และขั้นต่ำ 4 ชั่วโมง
+            // ==========================================
+            if (leaveTypeVal === "0") {
+                // เช็คว่ามีเศษนาที (reqMins > 0) หรือเศษชั่วโมง (เช่น 1.5 ชม.) หรือไม่
+                if (reqMins > 0 || reqHours % 1 !== 0) {
+                    showAlert("แจ้งเตือน", "❌ การลาพักร้อนต้องระบุเวลาเป็น 'หน่วยเต็มชั่วโมง' เท่านั้น\n(ไม่อนุญาตให้มีเศษนาที หรือเศษชั่วโมง เช่น 1.5 ช.ม.)", false);
+                    return;
+                }
+
+                // แปลงวันเป็นชั่วโมงเพื่อรวมยอด (1 วัน = 8 ชั่วโมง)
+                const totalHrs = (reqDays * 8) + reqHours;
+                if (totalHrs < 4) {
+                    showAlert("แจ้งเตือน", "❌ การลาพักร้อนต้องลาขั้นต่ำครึ่งวัน (4 ชั่วโมง) ขึ้นไป", false);
+                    return;
+                }
+            }
 
             let extraWarningHtml = "";
             
