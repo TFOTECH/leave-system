@@ -144,7 +144,7 @@
         btn.disabled = true;
         
         timer = setTimeout(() => {
-          fetch(GAS_URL + "?action=getInfo&empId=" + encodeURIComponent(empId))
+          fetch(GAS_URL + "?action=getInfo&empId=" + encodeURIComponent(empId) + "&userId=" + encodeURIComponent(userId))
             .then(res => res.json())
             .then(res => {
               if (res.found) {
