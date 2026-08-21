@@ -8,7 +8,6 @@
   <style>
     body {
       font-family: 'Sarabun', sans-serif;
-      /* เปลี่ยนพื้นหลังเป็นไล่เฉดสีเขียว-ฟ้าอ่อน สดใสขึ้น */
       background: linear-gradient(135deg, #e0f2fe 0%, #dcfce7 100%);
       margin: 0;
       display: flex;
@@ -30,7 +29,6 @@
       margin-top: 0;
       font-size: 28px;
       font-weight: 700;
-      /* ทำให้หัวข้อมีสีไล่ระดับเขียว-น้ำเงิน ดูพรีเมียม */
       background: linear-gradient(90deg, #059669, #2563eb);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -51,7 +49,6 @@
       box-sizing: border-box;
       margin-bottom: 20px;
       font-family: 'Sarabun', sans-serif;
-      transition: all 0.3s ease;
       letter-spacing: 1px;
     }
     input:focus {
@@ -65,17 +62,11 @@
       font-size: 16px;
       line-height: 1.5;
     }
-    /* กล่องโชว์ข้อมูลพนักงานให้ดูมีมิติ */
     .emp-box {
       background: #f8fafc;
       border: 1px dashed #cbd5e1;
       border-radius: 12px;
       padding: 12px;
-      animation: fadeIn 0.4s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     button {
       width: 100%;
@@ -86,7 +77,6 @@
       cursor: pointer;
       font-family: 'Sarabun', sans-serif;
       font-weight: 600;
-      transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(0, 185, 0, 0.2);
     }
     button:disabled {
@@ -99,15 +89,12 @@
       background: linear-gradient(135deg, #00B900, #059669);
       color: #ffffff;
     }
-    button:not(:disabled):active {
-      transform: scale(0.98);
-    }
     #status {
       margin-top: 15px;
       font-size: 15px;
       font-weight: 600;
     }
-    .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; border: 1px solid #fee2e2; }
+    .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; }
     .success { color: #059669; }
     .details { color: #1e293b; font-weight: 700; font-size: 17px; }
     .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; }
@@ -116,9 +103,9 @@
 <body>
   <div class="card">
     <h2>ลงทะเบียนใช้งาน</h2>
-    <div class="subtitle" id="subtitle">กรุณากรอกรหัสพนักงานของคุณ</div>
+    <div class="subtitle">กรุณากรอกรหัสพนักงานของคุณ</div>
     
-    <input type="text" id="empId" placeholder="กรอกรหัส 7 หลัก" maxlength="10" oninput="checkData()">
+    <input type="text" id="empId" placeholder="กรอกรหัสพนักงาน" oninput="checkData()">
     
     <div id="info"></div>
     
@@ -131,10 +118,7 @@
     var LIFF_ID = "2011194770-go33uUQg"; 
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
 
-    async function main() {
-      var statusDiv = document.getElementById("status");
-      statusDiv.innerHTML = "<span style='color:blue; font-size: 14px;'>⏳ กำลังเชื่อมต่อระบบ LINE...</span>";
-      
+    window.onload = async function() {
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
@@ -142,15 +126,10 @@
         } else {
           const profile = await liff.getProfile();
           userId = profile.userId;
-          statusDiv.innerHTML = ""; 
         }
       } catch (err) {
-        statusDiv.innerHTML = "<span class='error'>⚠️ " + err.message + "</span>";
+        document.getElementById("status").innerHTML = "<span class='error'>LINE Error: " + err.message + "</span>";
       }
-    }
-
-    window.onload = function() {
-      main();
     };
 
     let timer;
@@ -160,20 +139,20 @@
       var infoDiv = document.getElementById("info");
       var btn = document.getElementById("btn");
 
-      if (empId.length >= 7) { 
+      if (empId.length >= 6) { 
         infoDiv.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูล...</span>";
         btn.disabled = true;
         
         timer = setTimeout(() => {
           fetch(GAS_URL + "?action=getInfo&empId=" + encodeURIComponent(empId))
-            .then(response => response.json())
+            .then(res => res.json())
             .then(res => {
               if (res.found) {
                 if (res.registered) {
                   infoDiv.innerHTML = `<div class="emp-box">
                     <span class="details">👤 คุณ ${res.name}</span>
                     <span class="dept-text">🏢 ${res.dept}</span>
-                    <span class='error' style='margin-top: 8px; border:none; background:#fee2e2;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>
+                    <span class='error' style='margin-top: 8px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>
                   </div>`;
                 } else {
                   infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
@@ -186,10 +165,10 @@
                 infoDiv.innerHTML = "<span class='error'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
               }
             })
-            .catch(err => {
+            .catch(() => {
               infoDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
             });
-        }, 500);
+        }, 300);
       } else {
         infoDiv.innerHTML = "";
         btn.disabled = true;
@@ -202,15 +181,15 @@
       var statusDiv = document.getElementById("status");
 
       if (!userId) {
-        statusDiv.innerHTML = "<span class='error'>ไม่สามารถบันทึกได้ เพราะระบบดึง LINE ID ของคุณไม่สำเร็จ</span>";
+        statusDiv.innerHTML = "<span class='error'>ไม่พบ LINE ID กรุณาเปิดผ่านแอป LINE</span>";
         return;
       }
 
       btn.disabled = true;
-      statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังบันทึกข้อมูลเข้าสู่ระบบ...</span>";
+      statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังบันทึกข้อมูล...</span>";
 
       fetch(GAS_URL + "?action=register&empId=" + encodeURIComponent(empId) + "&userId=" + encodeURIComponent(userId))
-        .then(response => response.json())
+        .then(res => res.json())
         .then(res => {
           if (res.success) {
             statusDiv.innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;'>🎉 " + res.message + "</span>";
@@ -220,7 +199,7 @@
             btn.disabled = false;
           }
         })
-        .catch(err => {
+        .catch(() => {
           statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
           btn.disabled = false;
         });
