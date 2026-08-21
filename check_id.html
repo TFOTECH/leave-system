@@ -4,22 +4,113 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .card { background-color: #ffffff; width: 90%; max-width: 400px; border-radius: 12px; padding: 40px 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); text-align: center; box-sizing: border-box; }
-    h2 { margin-top: 0; font-size: 26px; margin-bottom: 5px; }
-    .subtitle { color: #333; margin-bottom: 20px; font-size: 16px; }
-    input { width: 100%; padding: 14px; font-size: 16px; text-align: center; border: 1px solid #dcdcdc; border-radius: 8px; box-sizing: border-box; margin-bottom: 20px; font-family: 'Sarabun', sans-serif; }
-    input:focus { outline: none; border-color: #00B900; }
-    #info { min-height: 60px; margin-bottom: 20px; font-size: 16px; line-height: 1.6; }
-    button { width: 100%; padding: 14px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 600; transition: background-color 0.3s; }
-    button:disabled { background-color: #cccccc; color: #ffffff; cursor: not-allowed; }
-    button:not(:disabled) { background-color: #00B900; color: #ffffff; }
-    #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .error { color: #ff3333; font-size: 14px; display:block; padding: 10px; background: #ffe6e6; border-radius: 5px; margin-top: 10px;}
-    .success { color: #00B900; }
-    .details { color: #222; font-weight: 600; font-size: 17px; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      /* เปลี่ยนพื้นหลังเป็นไล่เฉดสีเขียว-ฟ้าอ่อน สดใสขึ้น */
+      background: linear-gradient(135deg, #e0f2fe 0%, #dcfce7 100%);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background-color: #ffffff;
+      width: 92%;
+      max-width: 400px;
+      border-radius: 20px;
+      padding: 35px 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      box-sizing: border-box;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 28px;
+      font-weight: 700;
+      /* ทำให้หัวข้อมีสีไล่ระดับเขียว-น้ำเงิน ดูพรีเมียม */
+      background: linear-gradient(90deg, #059669, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 25px;
+      font-size: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      font-family: 'Sarabun', sans-serif;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #059669;
+      box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    }
+    #info {
+      min-height: 70px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    /* กล่องโชว์ข้อมูลพนักงานให้ดูมีมิติ */
+    .emp-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Sarabun', sans-serif;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 185, 0, 0.2);
+    }
+    button:disabled {
+      background-color: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button:not(:disabled) {
+      background: linear-gradient(135deg, #00B900, #059669);
+      color: #ffffff;
+    }
+    button:not(:disabled):active {
+      transform: scale(0.98);
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; border: 1px solid #fee2e2; }
+    .success { color: #059669; }
+    .details { color: #1e293b; font-weight: 700; font-size: 17px; }
+    .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; }
   </style>
 </head>
 <body>
@@ -27,7 +118,7 @@
     <h2>ลงทะเบียนใช้งาน</h2>
     <div class="subtitle" id="subtitle">กรุณากรอกรหัสพนักงานของคุณ</div>
     
-    <input type="text" id="empId" placeholder="กรุณากรอกรหัสพนักงาน 7 หลัก" oninput="checkData()">
+    <input type="text" id="empId" placeholder="กรอกรหัส 7 หลัก" maxlength="10" oninput="checkData()">
     
     <div id="info"></div>
     
@@ -38,13 +129,11 @@
   <script>
     var userId = "";
     var LIFF_ID = "2011194770-go33uUQg"; 
-    
-    // 🔗 ใช้ URL ใหม่ที่คุณให้มา
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
 
     async function main() {
       var statusDiv = document.getElementById("status");
-      statusDiv.innerHTML = "<span style='color:blue;'>⏳ กำลังเชื่อมต่อระบบ...</span>";
+      statusDiv.innerHTML = "<span style='color:blue; font-size: 14px;'>⏳ กำลังเชื่อมต่อระบบ LINE...</span>";
       
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -72,7 +161,7 @@
       var btn = document.getElementById("btn");
 
       if (empId.length >= 7) { 
-        infoDiv.innerHTML = "⏳ กำลังค้นหาข้อมูล...";
+        infoDiv.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูล...</span>";
         btn.disabled = true;
         
         timer = setTimeout(() => {
@@ -81,17 +170,24 @@
             .then(res => {
               if (res.found) {
                 if (res.registered) {
-                  infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span><br><span style='color:red; font-size:14px; display:block; margin-top:5px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>";
+                  infoDiv.innerHTML = `<div class="emp-box">
+                    <span class="details">👤 คุณ ${res.name}</span>
+                    <span class="dept-text">🏢 ${res.dept}</span>
+                    <span class='error' style='margin-top: 8px; border:none; background:#fee2e2;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>
+                  </div>`;
                 } else {
-                  infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span>";
+                  infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
+                    <span class="details" style="color: #166534;">👤 คุณ ${res.name}</span>
+                    <span class="dept-text" style="color: #15803d;">🏢 ${res.dept}</span>
+                  </div>`;
                   btn.disabled = false; 
                 }
               } else {
-                infoDiv.innerHTML = "<span style='color:red;'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
+                infoDiv.innerHTML = "<span class='error'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
               }
             })
             .catch(err => {
-              infoDiv.innerHTML = "<span style='color:red;'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
+              infoDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
             });
         }, 500);
       } else {
@@ -111,16 +207,13 @@
       }
 
       btn.disabled = true;
-      // เปลี่ยนข้อความให้ดูนุ่มนวลขึ้น
-      statusDiv.innerHTML = "<span style='color:blue;'>⏳ กำลังบันทึกข้อมูลเข้าสู่ระบบ...</span>";
+      statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังบันทึกข้อมูลเข้าสู่ระบบ...</span>";
 
       fetch(GAS_URL + "?action=register&empId=" + encodeURIComponent(empId) + "&userId=" + encodeURIComponent(userId))
         .then(response => response.json())
         .then(res => {
           if (res.success) {
-            // แสดงข้อความสำเร็จทันที
-            statusDiv.innerHTML = "<span class='success' style='font-size: 16px;'>" + res.message + "</span>";
-            // สั่งปิดหน้าต่าง LIFF เร็วขึ้น (1.5 วินาที) เพื่อความลื่นไหล
+            statusDiv.innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;'>🎉 " + res.message + "</span>";
             setTimeout(() => { liff.closeWindow(); }, 1500); 
           } else {
             statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
@@ -128,7 +221,7 @@
           }
         })
         .catch(err => {
-          statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
+          statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
           btn.disabled = false;
         });
     }
