@@ -111,21 +111,24 @@
       }
 
       btn.disabled = true;
-      statusDiv.innerHTML = "<span style='color:blue;'>กำลังบันทึกข้อมูล...</span>";
+      // เปลี่ยนข้อความให้ดูนุ่มนวลขึ้น
+      statusDiv.innerHTML = "<span style='color:blue;'>⏳ กำลังบันทึกข้อมูลเข้าสู่ระบบ...</span>";
 
       fetch(GAS_URL + "?action=register&empId=" + encodeURIComponent(empId) + "&userId=" + encodeURIComponent(userId))
         .then(response => response.json())
         .then(res => {
           if (res.success) {
-            statusDiv.innerHTML = "<span style='color:#00B900; font-weight:bold; font-size: 16px;'>" + res.message + "</span>";
-            setTimeout(() => { liff.closeWindow(); }, 2500); 
+            // แสดงข้อความสำเร็จทันที
+            statusDiv.innerHTML = "<span class='success' style='font-size: 16px;'>" + res.message + "</span>";
+            // สั่งปิดหน้าต่าง LIFF เร็วขึ้น (1.5 วินาที) เพื่อความลื่นไหล
+            setTimeout(() => { liff.closeWindow(); }, 1500); 
           } else {
             statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
             btn.disabled = false;
           }
         })
         .catch(err => {
-          statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
+          statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
           btn.disabled = false;
         });
     }
