@@ -103,9 +103,10 @@
 <body>
   <div class="card">
     <h2>ลงทะเบียนใช้งาน</h2>
-    <div class="subtitle">กรุณากรอกรหัสพนักงานของคุณ</div>
+    <div class="subtitle">กรุณากรอกรหัสพนักงาน 7 หลัก</div>
     
-    <input type="text" id="empId" placeholder="กรอกรหัสพนักงาน" oninput="checkData()">
+    <!-- จำกัดการพิมพ์ไม่เกิน 7 ตัวอักษร -->
+    <input type="text" id="empId" placeholder="กรอกรหัส 7 หลัก" maxlength="7" oninput="checkData()">
     
     <div id="info"></div>
     
@@ -139,7 +140,8 @@
       var infoDiv = document.getElementById("info");
       var btn = document.getElementById("btn");
 
-      if (empId.length >= 6) { 
+      // กำหนดให้ค้นหาเมื่อครบ 7 หลักเป๊ะๆ เท่านั้น
+      if (empId.length === 7) { 
         infoDiv.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูล...</span>";
         btn.disabled = true;
         
@@ -152,7 +154,7 @@
                   infoDiv.innerHTML = `<div class="emp-box">
                     <span class="details">👤 คุณ ${res.name}</span>
                     <span class="dept-text">แผนก : ${res.dept}</span>
-                    <span class='error' style='margin-top: 8px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>
+                    <span class='error' style='margin-top: 8px;'>⚠️ ${res.message || 'ท่านได้ลงทะเบียนเรียบร้อยแล้ว'}</span>
                   </div>`;
                 } else {
                   infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
@@ -170,6 +172,7 @@
             });
         }, 300);
       } else {
+        // ถ้ายังไม่ครบ 7 หลัก จะเคลียร์ช่องแสดงผลทิ้งและปิดปุ่มลงทะเบียน
         infoDiv.innerHTML = "";
         btn.disabled = true;
       }
