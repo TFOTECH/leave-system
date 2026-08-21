@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -36,34 +37,23 @@
 
   <script>
     var userId = "";
-    var LIFF_ID = "2011194770-go33uUQg"; // รหัส LIFF ID ของคุณ
+    var LIFF_ID = "2011194770-go33uUQg"; 
+    
+    // 🛑 นำ Web App URL ของ Google Apps Script มาใส่ในเครื่องหมายคำพูดด้านล่างนี้
+    var GAS_URL = "ใส่_WEB_APP_URL_ของGoogle_Apps_Script_ที่นี่";
 
     async function main() {
       var statusDiv = document.getElementById("status");
-      statusDiv.innerHTML = "<span style='color:blue;'>⏳ กำลังเชื่อมต่อระบบ (1/3)...</span>";
+      statusDiv.innerHTML = "<span style='color:blue;'>⏳ กำลังเชื่อมต่อระบบ...</span>";
       
-      // ตั้งเวลา 8 วินาที ป้องกันแอป LINE ค้าง (มักเกิดจาก iPhone ป้องกันการติดตาม)
-      const timeout = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("อุปกรณ์บล็อกการเชื่อมต่อ (หากใช้ iPhone ให้ไปที่ ตั้งค่า > Safari > ปิด 'ป้องกันการติดตามข้ามไซต์')")), 8000);
-      });
-
       try {
-        // แข่งกันระหว่างการเชื่อมต่อ LIFF กับเวลา 8 วินาที
-        await Promise.race([
-          liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true }),
-          timeout
-        ]);
-        
-        statusDiv.innerHTML = "<span style='color:blue;'>✅ ตรวจสอบบัญชี (2/3)...</span>";
-        
+        await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
-          statusDiv.innerHTML = "<span style='color:blue;'>กำลังพาไปหน้าล็อกอิน...</span>";
           liff.login();
         } else {
-          statusDiv.innerHTML = "<span style='color:blue;'>ดึงข้อมูล LINE (3/3)...</span>";
           const profile = await liff.getProfile();
           userId = profile.userId;
-          statusDiv.innerHTML = ""; // สำเร็จ ลบข้อความทิ้ง
+          statusDiv.innerHTML = ""; 
         }
       } catch (err) {
         statusDiv.innerHTML = "<span class='error'>⚠️ " + err.message + "</span>";
@@ -86,18 +76,23 @@
         btn.disabled = true;
         
         timer = setTimeout(() => {
-          google.script.run.withSuccessHandler(function(res) {
-            if (res.found) {
-              if (res.registered) {
-                infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span><br><span style='color:red; font-size:14px; display:block; margin-top:5px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>";
+          fetch(GAS_URL + "?action=getInfo&empId=" + encodeURIComponent(empId))
+            .then(response => response.json())
+            .then(res => {
+              if (res.found) {
+                if (res.registered) {
+                  infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span><br><span style='color:red; font-size:14px; display:block; margin-top:5px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>";
+                } else {
+                  infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span>";
+                  btn.disabled = false; 
+                }
               } else {
-                infoDiv.innerHTML = "<span class='details'>คุณ " + res.name + "<br>แผนก " + res.dept + "</span>";
-                btn.disabled = false; 
+                infoDiv.innerHTML = "<span style='color:red;'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
               }
-            } else {
-              infoDiv.innerHTML = "<span style='color:red;'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
-            }
-          }).getEmpInfo(empId);
+            })
+            .catch(err => {
+              infoDiv.innerHTML = "<span style='color:red;'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
+            });
         }, 500);
       } else {
         infoDiv.innerHTML = "";
@@ -111,22 +106,28 @@
       var statusDiv = document.getElementById("status");
 
       if (!userId) {
-        statusDiv.innerHTML = "<span class='error'>ไม่สามารถบันทึกได้ เพราะระบบดึง LINE ID ของคุณไม่สำเร็จ กรุณารีเฟรชหน้าจอ</span>";
+        statusDiv.innerHTML = "<span class='error'>ไม่สามารถบันทึกได้ เพราะระบบดึง LINE ID ของคุณไม่สำเร็จ</span>";
         return;
       }
 
       btn.disabled = true;
       statusDiv.innerHTML = "<span style='color:blue;'>กำลังบันทึกข้อมูล...</span>";
 
-      google.script.run.withSuccessHandler(function(res) {
-        if (res.success) {
-          statusDiv.innerHTML = "<span style='color:#00B900; font-weight:bold; font-size: 16px;'>" + res.message + "</span>";
-          setTimeout(() => { liff.closeWindow(); }, 2500); 
-        } else {
-          statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
+      fetch(GAS_URL + "?action=register&empId=" + encodeURIComponent(empId) + "&userId=" + encodeURIComponent(userId))
+        .then(response => response.json())
+        .then(res => {
+          if (res.success) {
+            statusDiv.innerHTML = "<span style='color:#00B900; font-weight:bold; font-size: 16px;'>" + res.message + "</span>";
+            setTimeout(() => { liff.closeWindow(); }, 2500); 
+          } else {
+            statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
+            btn.disabled = false;
+          }
+        })
+        .catch(err => {
+          statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
           btn.disabled = false;
-        }
-      }).processRegistration(empId, userId);
+        });
     }
   </script>
 </body>
