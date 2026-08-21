@@ -66,7 +66,7 @@
       background: #f8fafc;
       border: 1px dashed #cbd5e1;
       border-radius: 12px;
-      padding: 12px;
+      padding: 14px;
     }
     button {
       width: 100%;
@@ -97,7 +97,7 @@
     .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; }
     .success { color: #059669; }
     .details { color: #1e293b; font-weight: 700; font-size: 17px; }
-    .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; }
+    .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -151,13 +151,13 @@
                 if (res.registered) {
                   infoDiv.innerHTML = `<div class="emp-box">
                     <span class="details">👤 คุณ ${res.name}</span>
-                    <span class="dept-text">🏢 ${res.dept}</span>
+                    <span class="dept-text">แผนก : ${res.dept}</span>
                     <span class='error' style='margin-top: 8px;'>⚠️ ท่านได้ลงทะเบียนเรียบร้อยแล้ว</span>
                   </div>`;
                 } else {
                   infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
                     <span class="details" style="color: #166534;">👤 คุณ ${res.name}</span>
-                    <span class="dept-text" style="color: #15803d;">🏢 ${res.dept}</span>
+                    <span class="dept-text" style="color: #15803d;">แผนก : ${res.dept}</span>
                   </div>`;
                   btn.disabled = false; 
                 }
