@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตรวจสอบสลิปเงินเดือน</title>
+  <!-- นำเข้า LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: 'Kanit', sans-serif; background-color: #f4f4f4; text-align: center; padding: 20px; }
+    .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    h2 { color: #333; margin-bottom: 20px; }
+    label { display: block; text-align: left; margin: 10px 0 5px; font-weight: bold; color: #555; }
+    select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 20px; }
+    button { width: 100%; background-color: #06C755; color: white; padding: 12px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    button:hover { background-color: #05a546; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>📄 เลือกเดือนที่ต้องการสลิป</h2>
+    
+    <label>เดือน (Month):</label>
+    <select id="month">
+      <option value="01">01 - มกราคม</option>
+      <option value="02">02 - กุมภาพันธ์</option>
+      <option value="03">03 - มีนาคม</option>
+      <option value="04">04 - เมษายน</option>
+      <option value="05">05 - พฤษภาคม</option>
+      <option value="06">06 - มิถุนายน</option>
+      <option value="07">07 - กรกฎาคม</option>
+      <option value="08" selected>08 - สิงหาคม</option>
+      <option value="09">09 - กันยายน</option>
+      <option value="10">10 - ตุลาคม</option>
+      <option value="11">11 - พฤศจิกายน</option>
+      <option value="12">12 - ธันวาคม</option>
+    </select>
+
+    <label>ปี (Year):</label>
+    <select id="year">
+      <option value="2026" selected>2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+
+    <button onclick="requestPayslip()">ยืนยันขอสลิปเงินเดือน</button>
+  </div>
+
+  <script>
+    // เริ่มต้นเชื่อมต่อระบบ LIFF
+    async function main() {
+      // ⚠️ คุณต้องเอา LIFF ID ที่ได้จาก LINE Developers มาใส่แทนที่ข้อความข้างล่างนี้นะครับ
+      await liff.init({ liffId: "ใส่_LIFF_ID_ของคุณตรงนี้" });
+    }
+    main();
+
+    // ฟังก์ชันเมื่อกดปุ่มยืนยัน
+    function requestPayslip() {
+      const m = document.getElementById('month').value;
+      const y = document.getElementById('year').value;
+      const tabName = m + "-" + y; // จะได้ชื่อแท็บ เช่น 08-2026
+      
+      // สั่งให้ LINE ของพนักงาน พิมพ์ข้อความส่งหาบอทอัตโนมัติ
+      if (liff.isApiAvailable('shareTargetPicker') || liff.isInClient()) {
+        liff.sendMessages([
+          { type: 'text', text: 'ขอสลิป ' + tabName }
+        ]).then(() => {
+          liff.closeWindow(); // ส่งเสร็จให้ปิดหน้าต่างเว็บทันที
+        }).catch((err) => {
+          alert('เกิดข้อผิดพลาด: ' + err);
+        });
+      } else {
+        alert('กรุณาเปิดลิงก์นี้ผ่านแอปพลิเคชัน LINE เท่านั้นครับ');
+      }
+    }
+  </script>
+</body>
+</html>
