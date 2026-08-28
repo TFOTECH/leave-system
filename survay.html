@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สำรวจไซส์ยูนิฟอร์มพนักงาน</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #06C755; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #05b34c; }
+        .hidden { display: none; }
+        .item-box { background: #fafafa; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #06C755; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>แบบฟอร์มสำรวจไซส์ยูนิฟอร์ม</h2>
+    
+    <!-- หน้าจอใส่รหัสพนักงานเพื่อค้นหาข้อมูลสิทธิ์ -->
+    <div id="login-section">
+        <div class="form-group">
+            <label>กรอกรหัสพนักงาน (Emp ID):</label>
+            <input type="text" id="empIdInput" placeholder="เช่น 1003026">
+        </div>
+        <button onclick="handleCheckEmployee()">ตรวจสอบสิทธิ์</button>
+    </div>
+
+    <!-- หน้าจอแสดงรายการที่ได้รับสิทธิ์และให้เลือกไซส์ -->
+    <div id="survey-section" class="hidden">
+        <p><strong>ชื่อ-นามสกุล:</strong> <span id="displayName"></span></p>
+        <p><strong>แผนก:</strong> <span id="displayDept"></span></p>
+        <hr>
+        <div id="quotaContainer"></div>
+        <button onclick="handleSubmit()">ยืนยันการส่งข้อมูล</button>
+    </div>
+</div>
+
+<script>
+    const GAS_URL = "YOUR_GAS_WEB_APP_URL"; // แทนที่ด้วย URL ของ Google Apps Script ที่ Deploy แล้ว
+    let currentEmpData = {};
+    let lineUid = "";
+
+    window.onload = function() {
+        initializeLiff();
+    };
+
+    function initializeLiff() {
+        liff.init({ liffId: "YOUR_LIFF_ID" }) // ใส่ LIFF ID ของคุณ
+        .then(() => {
+            if (liff.isLoggedIn()) {
+                const profile = liff.getDecodedIDToken();
+                lineUid = profile ? profile.sub : "";
+            }
+        }).catch((err) => {
+            console.log("LIFF Init failed", err);
+        });
+    }
+
+    function handleCheckEmployee() {
+        const empId = document.getElementById('empIdInput').value;
+        if (!empId) {
+            alert("กรุณากรอกรหัสพนักงาน");
+            return;
+        }
+
+        fetch(`${GAS_URL}?action=check&empId=${empId}`) // หรือใช้ google.script.run ถ้าทำระบบภายใน
+        // เนื่องจากการเรียกข้ามโดเมนจาก GitHub ไป GAS แนะนำให้ใช้ fetch ผ่าน doGet หรือปรับเป็น google.script.run ตามโครงสร้างจริง
+    }
+
+    // หมายเหตุ: เพื่อให้โค้ดทดสอบง่าย แนะนำให้ผูกฟังก์ชันเรียกผ่าน google.script.run หรือใช้ Fetch API รับส่ง JSON 
+</script>
+</body>
+</html>
