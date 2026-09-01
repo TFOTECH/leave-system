@@ -196,12 +196,7 @@
         .then(res => {
           if (res.success) {
             statusDiv.innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;'>🎉 " + res.message + "</span>";
-            
-            // เปลี่ยนจากปิดหน้าต่าง เป็นการเปิดลิงก์ฟอร์มยูนิฟอร์มแทน
-            setTimeout(() => { 
-                window.location.replace("https://liff.line.me/2011288511-sfKqIW0q"); 
-            }, 1500); 
-            
+            setTimeout(() => { liff.closeWindow(); }, 1500); 
           } else {
             statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
             btn.disabled = false;
