@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon | เร็วๆ นี้</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 85%;
+            width: 350px;
+        }
+        .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            /* เพิ่มอนิเมชันให้ไอคอนขยับขึ้นลงเบาๆ */
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        h1 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #7f8c8d;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 400;
+        }
+        p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .en-text {
+            font-size: 14px;
+            color: #888;
+        }
+        .btn-close {
+            margin-top: 25px;
+            padding: 12px 25px;
+            background-color: #00B900; /* สีเขียวของ LINE */
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 15px;
+            font-family: 'Prompt', sans-serif;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .btn-close:hover {
+            background-color: #009900;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🛠️✨</div>
+        
+        <h1>เร็วๆ นี้</h1>
+        <h2>Coming Soon</h2>
+        
+        <p>ฟีเจอร์นี้กำลังอยู่ในระหว่างการพัฒนา<br>ขออภัยในความไม่สะดวกครับ/ค่ะ</p>
+        <p class="en-text">We are currently working on this feature.<br>Sorry for the inconvenience.</p>
+        
+        <a href="javascript:history.back();" class="btn-close">กลับสู่หน้าหลัก / Back</a>
+    </div>
+</body>
+</html>
