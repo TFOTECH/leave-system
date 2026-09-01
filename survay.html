@@ -81,27 +81,26 @@
 
     <script>
         // ==========================================
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzal4i3ub3CMoG7tkInERBY8PjFkjTi4LLG8Vn8jaGDxh7vJyWPri-0uWIfIAKzG9ksww/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx1vRJo_yYW4CDMWvr_gNRD2LGCowWc07inEczwfS8lBir8DYD9BLmKh6mtjpi9QVDm/exec"; 
         const LIFF_ID = "2011288511-sfKqIW0q";
         // ==========================================
 
-        let lineUid = "U_Manual_Test_UID"; 
+        let lineUid = ""; 
         let currentEmpData = {};
         let activeConditionItems = [];
 
-        // ข้อมูลเสื้อแต่ละประเภท และไซส์ที่สอดคล้องกับคอลัมน์ใน Excel 
+        // อัปเดต Prefix ตัวย่อและแก้ไขเสื้อคอกลม
         const uniformConfig = {
-            'short': { name: 'เสื้อช็อปแขนสั้น', prefix: 'Shirt-Short_', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
-            'long': { name: 'เสื้อช็อปแขนยาว', prefix: 'Shirt-Long_', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
-            'trousers': { name: 'กางเกง', prefix: 'Trousers_', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
-            'polo': { name: 'เสื้อโปโล', prefix: 'Polo_', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
-            'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-shirt', sizes: ['F'] }, // ไซส์ F อย่างเดียว
-            'safari': { name: 'เสื้อซาฟารี', prefix: 'Driver_', sizes: ['M','L','XL','2XL'] },
-            'safari_pants': { name: 'กางเกงซาฟารี', prefix: 'Driver-Pants_', sizes: ['30','32','34','36','38','40'] },
-            'office': { name: 'เสื้อเชิ๊ตออฟฟิต', prefix: 'Office', sizes: [] } // ไม่ต้องระบุไซส์
+            'short': { name: 'เสื้อช็อปแขนสั้น', prefix: 's', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
+            'long': { name: 'เสื้อช็อปแขนยาว', prefix: 'l', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
+            'trousers': { name: 'กางเกง', prefix: 't', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
+            'polo': { name: 'เสื้อโปโล', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, // ต้องตรงกับหัวตาราง
+            'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-shirt', sizes: ['FreeSize'] }, 
+            'safari': { name: 'เสื้อซาฟารี', prefix: 'd', sizes: ['S','M','L','XL','2XL','3XL'] }, // สมมติลบ d ออกเพราะเดี๋ยว prefix + size 
+            'safari_pants': { name: 'กางเกงซาฟารี', prefix: 'd', sizes: ['28','30','32','34','36','38','40'] },
+            'office': { name: 'เสื้อเชิ๊ตออฟฟิต', prefix: 'Office', sizes: [] }
         };
 
-        // กฎการแจกชุดตามเงื่อนไข (Condition A-E)
         const conditionRules = {
             'A': [
                 { id: 'short', qty: 2 },
@@ -110,7 +109,7 @@
                 { id: 'tshirt', qty: 3 }
             ],
             'B': [
-                { id: 'short', qty: 2, shared: 'shop' }, // shared: 'shop' เพื่อให้แก้ไขตัวเลขสลับกันได้
+                { id: 'short', qty: 2, shared: 'shop' },
                 { id: 'long', qty: 0, shared: 'shop' }, 
                 { id: 'trousers', qty: 2 },
                 { id: 'polo', qty: 2 },
@@ -138,6 +137,9 @@
                     if (liff.isLoggedIn()) {
                         const profile = liff.getDecodedIDToken();
                         if(profile) lineUid = profile.sub;
+                    } else {
+                        // liff.login(); // หากต้องการบังคับล็อกอิน เอาคอมเมนต์ออก
+                        console.log("Not logged in");
                     }
                 }).catch(err => console.error("LIFF Error:", err));
             }
@@ -174,7 +176,6 @@
             document.getElementById('profileName').innerText = `ชื่อ: ${currentEmpData.Fullname || currentEmpData.Name || '-'}`;
             document.getElementById('profileDept').innerText = `แผนก: ${currentEmpData.DeptName || currentEmpData.Department || '-'}`;
             
-            // ตรวจสอบเงื่อนไขจากคอลัมน์ Condition
             const condValue = (currentEmpData.Condition || '').toString().trim().toUpperCase();
             document.getElementById('profileCondition').innerText = `เงื่อนไขสิทธิ์: ${condValue || 'ไม่พบข้อมูล'}`;
 
@@ -189,21 +190,16 @@
                 return;
             }
 
-            // วนลูปสร้างฟอร์มตามเงื่อนไขที่ได้
             activeConditionItems.forEach(req => {
                 const config = uniformConfig[req.id];
-                const isShared = req.shared === 'shop'; // เช็คว่าเป็นเสื้อช็อปของเงื่อนไข B ไหม
+                const isShared = req.shared === 'shop'; 
                 
-                // 1. จัดการส่วนของการเลือกไซส์
                 let sizeHtml = '';
-                if (config.sizes.length === 1 && config.sizes[0] === 'F') {
-                    // กรณีเสื้อคอกลม (ล็อคไซส์ F)
-                    sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">ไซส์ F อย่างเดียว</div>`;
+                if (config.sizes.length === 1 && config.sizes[0] === 'FreeSize') {
+                    sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">Free Size</div>`;
                 } else if (config.sizes.length === 0) {
-                    // กรณีเสื้อออฟฟิศ (ไม่ต้องใส่ไซส์)
                     sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">ไม่ต้องระบุไซส์</div>`;
                 } else {
-                    // กรณีเสื้อ/กางเกงอื่นๆ (ดรอปดาวน์)
                     sizeHtml = `<select id="sizeSelect_${req.id}" class="w-2/3 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#06C755] font-bold text-[#06C755]">
                         <option value="">-- เลือกไซส์ --</option>`;
                     config.sizes.forEach(size => {
@@ -212,21 +208,17 @@
                     sizeHtml += `</select>`;
                 }
 
-                // 2. จัดการส่วนของจำนวน (Quantity)
                 let qtyHtml = '';
                 let extraNote = '';
                 if (isShared) {
-                    // กรณี เงื่อนไข B: เสื้อช็อป (เปิดให้พิมพ์ตัวเลขได้)
                     qtyHtml = `<input type="number" min="0" max="2" id="qtyInput_${req.id}" class="shop-qty w-1/3 text-center border border-[#06C755] rounded-lg outline-none focus:ring-2 focus:ring-[#06C755] font-bold text-[#06C755]" value="${req.qty}">`;
                     if(req.id === 'short') {
                         extraNote = `<p class="text-xs text-blue-600 mb-2 font-bold">💡 เสื้อช็อป (สั้น/ยาว) ปรับตัวเลขสลับกันได้ แต่รวมกันต้องเท่ากับ 2 ตัว</p>`;
                     }
                 } else {
-                    // กรณีอื่นๆ (ล็อกจำนวนตัวอักษรสีเทา)
                     qtyHtml = `<input type="number" id="qtyInput_${req.id}" class="w-1/3 text-center border border-gray-300 bg-gray-100 rounded-lg outline-none text-gray-500 font-bold" value="${req.qty}" readonly>`;
                 }
 
-                // 3. รวมเป็น HTML ของแต่ละรายการ
                 let html = `
                 ${extraNote}
                 <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
@@ -245,7 +237,6 @@
         }
 
         async function submitData() {
-            // เช็คเงื่อนไขพิเศษสำหรับ เสื้อช็อปเงื่อนไข B (ต้องรวมกันได้ 2)
             const shopInputs = document.querySelectorAll('.shop-qty');
             if (shopInputs.length > 0) {
                 let shopTotal = 0;
@@ -259,7 +250,6 @@
             const selections = {};
             let hasData = false;
 
-            // วนลูปเพื่อเก็บค่าที่พนักงานเลือก
             for(let i=0; i<activeConditionItems.length; i++) {
                 const req = activeConditionItems[i];
                 const config = uniformConfig[req.id];
@@ -269,14 +259,11 @@
                 if (qty > 0) {
                     let fieldName = '';
                     
-                    if (config.sizes.length === 1 && config.sizes[0] === 'F') {
-                        // เสื้อคอกลม (ชื่อฟิลด์ตรงตามหัวคอลัมน์ T-shirt)
+                    if (config.sizes.length === 1 && config.sizes[0] === 'FreeSize') {
                         fieldName = config.prefix; 
                     } else if (config.sizes.length === 0) {
-                        // เสื้อออฟฟิศ (ชื่อฟิลด์ตรงตามหัวคอลัมน์ Office)
                         fieldName = config.prefix; 
                     } else {
-                        // เสื้ออื่นๆ ที่ต้องมีไซส์ต่อท้าย (เช่น Polo_M)
                         const sizeSelect = document.getElementById(`sizeSelect_${req.id}`);
                         const size = sizeSelect.value;
                         if (!size) {
@@ -302,7 +289,7 @@
 
             const payload = {
                 empId: currentEmpData['Emp ID'] || currentEmpData['Emp_ID'],
-                lineUid: lineUid,
+                lineUid: lineUid || 'N/A', // ส่ง N/A หากไม่มี lineUid
                 selections: selections
             };
 
