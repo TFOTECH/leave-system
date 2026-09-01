@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -24,50 +24,67 @@
         <!-- Main Content -->
         <div class="px-6 py-6" id="app-container">
             
-            <!-- Section 1: Check Employee -->
-            <div id="section-login" class="space-y-4">
-                <p class="text-sm text-gray-600 mb-2 text-center">ระบบจะผูกข้อมูลกับบัญชี LINE ของท่านโดยอัตโนมัติ</p>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">รหัสพนักงาน (Emp ID):</label>
-                    <input type="text" id="empId" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#06C755] outline-none" placeholder="ระบุรหัสพนักงานของท่าน เช่น 1003026">
-                </div>
-                <button onclick="checkEmployee()" class="w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200">
-                    ตรวจสอบสิทธิ์
-                </button>
-                <div id="login-loading" class="hidden mt-4 text-center">
-                    <div class="loader"></div>
-                    <p class="text-sm text-gray-500 mt-2">กำลังตรวจสอบข้อมูล...</p>
-                </div>
+            <!-- Section: Loading -->
+            <div id="main-loading" class="text-center py-20">
+                <div class="loader"></div>
+                <p class="text-gray-500 mt-4 font-bold">กำลังตรวจสอบข้อมูลพนักงาน...</p>
             </div>
 
-            <!-- Section 2: Survey Form -->
-            <div id="section-survey" class="hidden space-y-6">
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h2 class="font-bold text-lg border-b pb-2 mb-2 text-gray-800" id="profileName">ชื่อ: -</h2>
-                    <p class="text-sm text-gray-600" id="profileDept">แผนก: -</p>
-                    <p class="text-sm text-blue-600 font-bold" id="profileCondition">เงื่อนไขสิทธิ์: -</p>
+            <!-- Section: Error Not Found (ยังไม่เคยลงทะเบียน) -->
+            <div id="section-error" class="hidden text-center py-10">
+                <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
+                <h2 class="text-xl font-bold text-gray-800">ไม่พบข้อมูลในระบบ</h2>
+                <p class="text-gray-500 mt-2 text-sm mb-6">ท่านอาจจะยังไม่ได้ลงทะเบียนผูกบัญชี LINE กับรหัสพนักงาน กรุณาลงทะเบียนก่อนเข้าทำรายการครับ</p>
+                <a href="https://liff.line.me/2011288511-DvBqzyS3" class="block w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200">
+                    ไปที่หน้าลงทะเบียน
+                </a>
+            </div>
 
-                <div id="quota-message" class="text-sm text-[#059669] bg-green-50 p-3 rounded-lg border border-green-200">
+            <!-- Profile Info (Shared by Survey and Summary) -->
+            <div id="profile-card" class="hidden bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                <h2 class="font-bold text-lg border-b pb-2 mb-2 text-gray-800" id="profileName">ชื่อ: -</h2>
+                <p class="text-sm text-gray-600" id="profileDept">แผนก: -</p>
+                <p class="text-sm text-blue-600 font-bold" id="profileCondition">เงื่อนไขสิทธิ์: -</p>
+            </div>
+
+            <!-- Section: Survey Form (กรอกข้อมูลใหม่) -->
+            <div id="section-survey" class="hidden space-y-6">
+                <div class="text-sm text-[#059669] bg-green-50 p-3 rounded-lg border border-green-200">
                     💡 <strong>คำแนะนำ:</strong> ระบบได้ระบุโควต้าของท่านไว้แล้ว <strong>กรุณาเลือกเฉพาะไซส์ที่ท่านต้องการ</strong>
                 </div>
 
-                <!-- Dynamic form container -->
                 <div id="form-items" class="space-y-4"></div>
 
                 <button onclick="submitData()" class="w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200 mt-4">
                     ยืนยันการส่งข้อมูล
                 </button>
                 <div id="submit-loading" class="hidden mt-4 text-center">
-                    <div class="loader"></div>
+                    <div class="loader" style="width: 25px; height: 25px;"></div>
                     <p class="text-sm text-gray-500 mt-2">กำลังบันทึกข้อมูล...</p>
                 </div>
             </div>
+
+            <!-- Section: Summary (ดูข้อมูลที่เคยกรอกแล้ว) -->
+            <div id="section-summary" class="hidden space-y-6">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                    <h2 class="font-bold text-lg text-blue-800">✅ ท่านได้ทำรายการไปแล้ว</h2>
+                    <p class="text-sm text-blue-600 mt-1">ข้อมูลด้านล่างคือรายการที่ท่านได้บันทึกไว้ (ไม่สามารถแก้ไขได้)</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">สรุปรายการที่เลือก</h3>
+                    <ul id="summary-list" class="space-y-2"></ul>
+                </div>
+                <button onclick="liff.closeWindow()" class="w-full border-2 border-gray-400 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50 transition duration-200 mt-4">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
             
-            <!-- Section 3: Success -->
+            <!-- Section: Success -->
             <div id="section-success" class="hidden text-center py-10">
                 <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
                 <h2 class="text-xl font-bold text-gray-800">บันทึกข้อมูลสำเร็จ!</h2>
                 <p class="text-gray-500 mt-2 text-sm">ข้อมูลไซส์ยูนิฟอร์มของท่านถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
@@ -81,7 +98,7 @@
 
     <script>
         // ==========================================
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzal4i3ub3CMoG7tkInERBY8PjFkjTi4LLG8Vn8jaGDxh7vJyWPri-0uWIfIAKzG9ksww/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzal4i3ub3CMoG7tkInERBY8PjFkjTi4LLG8Vn8jaGDxh7vJyWPri-0uWIfIAKzG9ksww/exec"; // << นำ URL ใหม่มาใส่ตรงนี้
         const LIFF_ID = "2011288511-sfKqIW0q";
         // ==========================================
 
@@ -89,45 +106,33 @@
         let currentEmpData = {};
         let activeConditionItems = [];
 
-        // อัปเดต Prefix ตัวย่อและแก้ไขเสื้อคอกลม
         const uniformConfig = {
             'short': { name: 'เสื้อช็อปแขนสั้น', prefix: 's', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
             'long': { name: 'เสื้อช็อปแขนยาว', prefix: 'l', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
             'trousers': { name: 'กางเกง', prefix: 't', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
-            'polo': { name: 'เสื้อโปโล', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, // ต้องตรงกับหัวตาราง
+            'polo': { name: 'เสื้อโปโล', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, 
             'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-shirt', sizes: ['FreeSize'] }, 
-            'safari': { name: 'เสื้อซาฟารี', prefix: 'd', sizes: ['S','M','L','XL','2XL','3XL'] }, // สมมติลบ d ออกเพราะเดี๋ยว prefix + size 
+            'safari': { name: 'เสื้อซาฟารี', prefix: 'd', sizes: ['S','M','L','XL','2XL','3XL'] }, 
             'safari_pants': { name: 'กางเกงซาฟารี', prefix: 'd', sizes: ['28','30','32','34','36','38','40'] },
             'office': { name: 'เสื้อเชิ๊ตออฟฟิต', prefix: 'Office', sizes: [] }
         };
 
         const conditionRules = {
             'A': [
-                { id: 'short', qty: 2 },
-                { id: 'long', qty: 1 },
-                { id: 'trousers', qty: 3 },
-                { id: 'tshirt', qty: 3 }
+                { id: 'short', qty: 2 }, { id: 'long', qty: 1 }, { id: 'trousers', qty: 3 }, { id: 'tshirt', qty: 3 }
             ],
             'B': [
-                { id: 'short', qty: 2, shared: 'shop' },
-                { id: 'long', qty: 0, shared: 'shop' }, 
-                { id: 'trousers', qty: 2 },
-                { id: 'polo', qty: 2 },
-                { id: 'tshirt', qty: 3 }
+                { id: 'short', qty: 2, shared: 'shop' }, { id: 'long', qty: 0, shared: 'shop' }, 
+                { id: 'trousers', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
             ],
             'C': [
-                { id: 'long', qty: 4 },
-                { id: 'trousers', qty: 4 }
+                { id: 'long', qty: 4 }, { id: 'trousers', qty: 4 }
             ],
             'D': [
-                { id: 'polo', qty: 2 },
-                { id: 'tshirt', qty: 3 },
-                { id: 'safari', qty: 2 },
-                { id: 'safari_pants', qty: 2 }
+                { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }, { id: 'safari', qty: 2 }, { id: 'safari_pants', qty: 2 }
             ],
             'E': [
-                { id: 'office', qty: 4 },
-                { id: 'polo', qty: 2 }
+                { id: 'office', qty: 4 }, { id: 'polo', qty: 2 }
             ]
         };
 
@@ -136,49 +141,81 @@
                 liff.init({ liffId: LIFF_ID }).then(() => {
                     if (liff.isLoggedIn()) {
                         const profile = liff.getDecodedIDToken();
-                        if(profile) lineUid = profile.sub;
+                        if(profile) {
+                            lineUid = profile.sub;
+                            autoCheckEmployee(lineUid); 
+                        }
                     } else {
-                        // liff.login(); // หากต้องการบังคับล็อกอิน เอาคอมเมนต์ออก
-                        console.log("Not logged in");
+                        liff.login(); 
                     }
                 }).catch(err => console.error("LIFF Error:", err));
             }
         };
 
-        async function checkEmployee() {
-            const empId = document.getElementById('empId').value.trim();
-            if (!empId) { alert('กรุณาระบุรหัสพนักงาน'); return; }
-
-            document.getElementById('login-loading').classList.remove('hidden');
-            
+        async function autoCheckEmployee(uid) {
             try {
-                const response = await fetch(`${GAS_WEB_APP_URL}?action=check&empId=${empId}`);
+                const response = await fetch(`${GAS_WEB_APP_URL}?action=checkUID&uid=${uid}`);
                 const result = await response.json();
                 
+                document.getElementById('main-loading').classList.add('hidden');
+
                 if (result.status === 'found') {
                     currentEmpData = result.data;
-                    setupSurveyForm();
+                    document.getElementById('profile-card').classList.remove('hidden');
+                    document.getElementById('profileName').innerText = `ชื่อ: ${currentEmpData.Fullname || '-'}`;
+                    document.getElementById('profileDept').innerText = `แผนก: ${currentEmpData.DeptName || '-'}`;
+                    
+                    const condValue = (currentEmpData.Condition || '').toString().trim().toUpperCase();
+                    document.getElementById('profileCondition').innerText = `เงื่อนไขสิทธิ์: ${condValue || '-'}`;
+
+                    if (result.isSubmitted) {
+                        renderSummary(result.selections);
+                        document.getElementById('section-summary').classList.remove('hidden');
+                    } else {
+                        setupSurveyForm(condValue);
+                    }
                 } else {
-                    alert('ไม่พบข้อมูลรหัสพนักงานนี้ในระบบ');
+                    document.getElementById('section-error').classList.remove('hidden');
                 }
             } catch (error) {
                 alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
                 console.error(error);
-            } finally {
-                document.getElementById('login-loading').classList.add('hidden');
+                document.getElementById('main-loading').classList.add('hidden');
             }
         }
 
-        function setupSurveyForm() {
-            document.getElementById('section-login').classList.add('hidden');
-            document.getElementById('section-survey').classList.remove('hidden');
-            
-            document.getElementById('profileName').innerText = `ชื่อ: ${currentEmpData.Fullname || currentEmpData.Name || '-'}`;
-            document.getElementById('profileDept').innerText = `แผนก: ${currentEmpData.DeptName || currentEmpData.Department || '-'}`;
-            
-            const condValue = (currentEmpData.Condition || '').toString().trim().toUpperCase();
-            document.getElementById('profileCondition').innerText = `เงื่อนไขสิทธิ์: ${condValue || 'ไม่พบข้อมูล'}`;
+        function renderSummary(selections) {
+            const list = document.getElementById('summary-list');
+            list.innerHTML = '';
 
+            for (const [key, qty] of Object.entries(selections)) {
+                let itemName = key;
+                let sizeName = '';
+
+                if (key === 'Office') itemName = 'เสื้อเชิ๊ตออฟฟิต';
+                else if (key === 'T-shirt') itemName = 'เสื้อคอกลม';
+                else {
+                    for (const confKey in uniformConfig) {
+                        const conf = uniformConfig[confKey];
+                        if (conf.prefix !== 'Office' && conf.prefix !== 'T-shirt' && key.startsWith(conf.prefix)) {
+                            itemName = conf.name;
+                            sizeName = ` ไซส์ ${key.replace(conf.prefix, '')}`;
+                            break;
+                        }
+                    }
+                }
+
+                list.innerHTML += `
+                    <li class="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-100">
+                        <span class="font-medium text-gray-700">${itemName}<span class="font-bold text-[#06C755]">${sizeName}</span></span>
+                        <span class="font-bold text-gray-800">${qty} ตัว</span>
+                    </li>
+                `;
+            }
+        }
+
+        function setupSurveyForm(condValue) {
+            document.getElementById('section-survey').classList.remove('hidden');
             const container = document.getElementById('form-items');
             container.innerHTML = '';
 
@@ -286,10 +323,10 @@
             if(!confirm('ยืนยันส่งข้อมูลไซส์ยูนิฟอร์มใช่หรือไม่?')) return;
 
             document.getElementById('submit-loading').classList.remove('hidden');
+            document.querySelector('button[onclick="submitData()"]').classList.add('hidden');
 
             const payload = {
-                empId: currentEmpData['Emp ID'] || currentEmpData['Emp_ID'],
-                lineUid: lineUid || 'N/A', // ส่ง N/A หากไม่มี lineUid
+                lineUid: lineUid,
                 selections: selections
             };
 
@@ -305,10 +342,12 @@
                     document.getElementById('section-success').classList.remove('hidden');
                 } else {
                     alert('เกิดข้อผิดพลาด: ' + result.message);
+                    document.querySelector('button[onclick="submitData()"]').classList.remove('hidden');
                 }
             } catch (error) {
                 alert('ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่');
                 console.error(error);
+                document.querySelector('button[onclick="submitData()"]').classList.remove('hidden');
             } finally {
                 document.getElementById('submit-loading').classList.add('hidden');
             }
