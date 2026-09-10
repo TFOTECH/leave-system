@@ -17,8 +17,8 @@
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg pb-10">
         <!-- Header -->
         <div class="bg-[#06C755] text-white py-4 px-6 rounded-b-2xl shadow-md text-center">
-            <h1 class="text-xl font-bold">ฟอร์มสำรวจยูนิฟอร์ม</h1>
-            <p class="text-sm opacity-90">ระบบบันทึกไซส์เสื้อผ้าประจำปี</p>
+            <h1 id="headerTitle" class="text-xl font-bold">ฟอร์มสำรวจยูนิฟอร์ม</h1>
+            <p id="headerSub" class="text-sm opacity-90">ระบบบันทึกไซร์ชุดพนักงานประจำปี 2570</p>
         </div>
 
         <!-- Main Content -->
@@ -27,7 +27,7 @@
             <!-- Section: Loading -->
             <div id="main-loading" class="text-center py-20">
                 <div class="loader"></div>
-                <p class="text-gray-500 mt-4 font-bold">กำลังตรวจสอบข้อมูลพนักงาน...</p>
+                <p id="loadingText" class="text-gray-500 mt-4 font-bold">กำลังตรวจสอบข้อมูลพนักงาน...<br><span class="text-sm font-normal">Checking employee data...</span></p>
             </div>
 
             <!-- Section: Error Not Found (ยังไม่เคยลงทะเบียน) -->
@@ -35,10 +35,10 @@
                 <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">ไม่พบข้อมูลในระบบ</h2>
-                <p class="text-gray-500 mt-2 text-sm mb-6">ท่านอาจจะยังไม่ได้ลงทะเบียนผูกบัญชี LINE กับรหัสพนักงาน กรุณาลงทะเบียนก่อนเข้าทำรายการครับ</p>
-                <a href="https://liff.line.me/2011288511-DvBqzyS3" class="block w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200 text-center">
-                    ไปที่หน้าลงทะเบียน
+                <h2 id="errTitle" class="text-xl font-bold text-gray-800">ไม่พบข้อมูลในระบบ<br><span class="text-lg">Data Not Found</span></h2>
+                <p id="errDesc" class="text-gray-500 mt-2 text-sm mb-6">ท่านอาจจะยังไม่ได้ลงทะเบียนผูกบัญชี LINE กับรหัสพนักงาน กรุณาลงทะเบียนก่อนเข้าทำรายการครับ<br><br>You may not have registered your LINE account. Please register first.</p>
+                <a href="https://liff.line.me/2011288511-DvBqzyS3" id="errBtn" class="block w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200 text-center">
+                    ไปที่หน้าลงทะเบียน / Go to Registration
                 </a>
             </div>
 
@@ -51,32 +51,32 @@
 
             <!-- Section: Survey Form (กรอกข้อมูลใหม่) -->
             <div id="section-survey" class="hidden space-y-6">
-                <div class="text-sm text-[#059669] bg-green-50 p-3 rounded-lg border border-green-200">
+                <div id="instructionText" class="text-sm text-[#059669] bg-green-50 p-3 rounded-lg border border-green-200">
                     💡 <strong>คำแนะนำ:</strong> ระบบได้ระบุโควต้าของท่านไว้แล้ว <strong>กรุณาเลือกเฉพาะไซส์ที่ท่านต้องการ</strong>
                 </div>
 
                 <div id="form-items" class="space-y-4"></div>
 
-                <button onclick="submitData()" class="w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200 mt-4">
+                <button id="submitBtn" onclick="submitData()" class="w-full bg-[#06C755] text-white font-bold py-3 rounded-lg shadow hover:bg-[#05b34c] transition duration-200 mt-4">
                     ยืนยันการส่งข้อมูล
                 </button>
                 <div id="submit-loading" class="hidden mt-4 text-center">
                     <div class="loader" style="width: 25px; height: 25px;"></div>
-                    <p class="text-sm text-gray-500 mt-2">กำลังบันทึกข้อมูล...</p>
+                    <p class="text-sm text-gray-500 mt-2">Processing...</p>
                 </div>
             </div>
 
             <!-- Section: Summary (ดูข้อมูลที่เคยกรอกแล้ว) -->
             <div id="section-summary" class="hidden space-y-6">
                 <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
-                    <h2 class="font-bold text-lg text-blue-800">✅ ท่านได้ทำรายการไปแล้ว</h2>
-                    <p class="text-sm text-red-500 font-bold mt-1">หากต้องการเปลี่ยนไซส์ กรุณาติดต่อฝ่ายบุคคล</p>
+                    <h2 id="summaryTitle" class="font-bold text-lg text-blue-800">✅ ท่านได้ทำรายการไปแล้ว</h2>
+                    <p id="summaryWarn" class="text-sm text-red-500 font-bold mt-1">หากต้องการเปลี่ยนไซส์ กรุณาติดต่อฝ่ายบุคคล</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">สรุปรายการที่เลือก</h3>
+                    <h3 id="summaryListTitle" class="font-bold text-gray-800 mb-3 border-b pb-2">สรุปรายการที่เลือก</h3>
                     <ul id="summary-list" class="space-y-2"></ul>
                 </div>
-                <button onclick="liff.closeWindow()" class="w-full border-2 border-gray-400 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50 transition duration-200 mt-4">
+                <button id="closeBtnSummary" onclick="liff.closeWindow()" class="w-full border-2 border-gray-400 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50 transition duration-200 mt-4">
                     ปิดหน้าต่าง
                 </button>
             </div>
@@ -86,9 +86,9 @@
                 <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">บันทึกข้อมูลสำเร็จ!</h2>
-                <p class="text-gray-500 mt-2 text-sm">ข้อมูลไซส์ยูนิฟอร์มของท่านถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
-                <button onclick="liff.closeWindow()" class="mt-6 w-full border-2 border-[#06C755] text-[#06C755] font-bold py-2 rounded-lg hover:bg-green-50 transition duration-200">
+                <h2 id="successTitle" class="text-xl font-bold text-gray-800">บันทึกข้อมูลสำเร็จ!</h2>
+                <p id="successDesc" class="text-gray-500 mt-2 text-sm">ข้อมูลไซส์ยูนิฟอร์มของท่านถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
+                <button id="closeBtnSuccess" onclick="liff.closeWindow()" class="mt-6 w-full border-2 border-[#06C755] text-[#06C755] font-bold py-2 rounded-lg hover:bg-green-50 transition duration-200">
                     ปิดหน้าต่าง
                 </button>
             </div>
@@ -98,22 +98,23 @@
 
     <script>
         // ==========================================
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSU87J8K2TDR90qCSMkUTMRoJC3cEeIMEB-hzRHcx1OaWGOs96zwYnGK5iA-y0dMGX/exec"; // อัปเดต URL เรียบร้อยครับ
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSU87J8K2TDR90qCSMkUTMRoJC3cEeIMEB-hzRHcx1OaWGOs96zwYnGK5iA-y0dMGX/exec"; 
         const LIFF_ID = "2011288511-sfKqIW0q";
         // ==========================================
 
         let lineUid = ""; 
         let currentEmpData = {};
         let activeConditionItems = [];
+        let isEng = false; 
 
         const uniformConfig = {
-            'short': { name: 'เสื้อช็อปแขนสั้น', prefix: 's', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
-            'long': { name: 'เสื้อช็อปแขนยาว', prefix: 'l', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
-            'trousers': { name: 'กางเกง', prefix: 't', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
-            'polo': { name: 'เสื้อโปโล', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, 
-            'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-Shirt', sizes: [] }, 
-            'safari': { name: 'ชุดซาฟารี', prefix: 'Safari', sizes: [] }, 
-            'shirt': { name: 'เสื้อเชิ้ต', prefix: 'Shirt', sizes: [] }
+            'short': { nameTh: 'เสื้อช็อปแขนสั้น', nameEn: 'Shop Shirt (Short Sleeve)', prefix: 's', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
+            'long': { nameTh: 'เสื้อช็อปแขนยาว', nameEn: 'Shop Shirt (Long Sleeve)', prefix: 'l', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
+            'trousers': { nameTh: 'กางเกง', nameEn: 'Trousers', prefix: 't', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
+            'polo': { nameTh: 'เสื้อโปโล', nameEn: 'Polo Shirt', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, 
+            'tshirt': { nameTh: 'เสื้อคอกลม', nameEn: 'T-Shirt', prefix: 'T-Shirt', sizes: ['Free Size'], sizeEn: 'Free Size' }, 
+            'safari': { nameTh: 'ชุดซาฟารี', nameEn: 'Safari Suit', prefix: 'Safari', sizes: ['วัดตัว'], sizeEn: 'Custom Size' }, 
+            'shirt': { nameTh: 'เสื้อเชิ้ต', nameEn: 'Office Shirt', prefix: 'Shirt', sizes: ['วัดตัว'], sizeEn: 'Custom Size' }
         };
 
         const conditionRules = {
@@ -171,12 +172,16 @@
 
                 if (result.status === 'found') {
                     currentEmpData = result.data;
+                    
+                    isEng = /[a-zA-Z]/.test(currentEmpData.Fullname || '');
+                    applyLanguage(); 
+                    
                     document.getElementById('profile-card').classList.remove('hidden');
-                    document.getElementById('profileName').innerText = `ชื่อ: ${currentEmpData.Fullname || '-'}`;
-                    document.getElementById('profileDept').innerText = `แผนก: ${currentEmpData.DeptName || '-'}`;
+                    document.getElementById('profileName').innerText = `${isEng ? 'Name' : 'ชื่อ'}: ${currentEmpData.Fullname || '-'}`;
+                    document.getElementById('profileDept').innerText = `${isEng ? 'Dept.' : 'แผนก'}: ${currentEmpData.DeptName || '-'}`;
                     
                     const condValue = (currentEmpData.Condition || '').toString().trim().toUpperCase();
-                    document.getElementById('profileCondition').innerText = `เงื่อนไขสิทธิ์: ${condValue || '-'}`;
+                    document.getElementById('profileCondition').innerText = `${isEng ? 'Condition' : 'เงื่อนไขสิทธิ์'}: ${condValue || '-'}`;
 
                     if (result.isSubmitted) {
                         renderSummary(result.selections);
@@ -184,14 +189,31 @@
                     } else {
                         setupSurveyForm(condValue);
                     }
-                } else {
+                } else if (result.status === 'not_found') {
                     document.getElementById('section-error').classList.remove('hidden');
+                } else {
+                    alert((isEng ? 'System Notice: ' : 'แจ้งเตือนจากระบบ: ') + result.message);
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ / Connection Error');
                 console.error(error);
                 document.getElementById('main-loading').classList.add('hidden');
             }
+        }
+
+        function applyLanguage() {
+            if(!isEng) return; 
+            document.getElementById('headerTitle').innerText = "Uniform Survey Form";
+            document.getElementById('headerSub').innerText = "Annual Uniform Size Record System 2027";
+            document.getElementById('instructionText').innerHTML = "💡 <strong>Note:</strong> Your quota is predefined. <strong>Please select only the sizes you need.</strong>";
+            document.getElementById('submitBtn').innerText = "Submit Data";
+            document.getElementById('summaryTitle').innerText = "✅ You have already submitted";
+            document.getElementById('summaryWarn').innerText = "To change your size, please contact HR.";
+            document.getElementById('summaryListTitle').innerText = "Summary of your selections";
+            document.getElementById('closeBtnSummary').innerText = "Close Window";
+            document.getElementById('successTitle').innerText = "Successfully Submitted!";
+            document.getElementById('successDesc').innerText = "Your uniform size data has been recorded.";
+            document.getElementById('closeBtnSuccess').innerText = "Close Window";
         }
 
         function renderSummary(selections) {
@@ -202,15 +224,21 @@
                 let itemName = key;
                 let sizeName = '';
 
-                if (key === 'Shirt') itemName = 'เสื้อเชิ้ต';
-                else if (key === 'T-Shirt') itemName = 'เสื้อคอกลม';
-                else if (key === 'Safari') itemName = 'ชุดซาฟารี';
-                else {
+                if (key === 'Shirt') {
+                    itemName = isEng ? 'Office Shirt' : 'เสื้อเชิ้ต';
+                    sizeName = isEng ? ' (Custom Size)' : ' (วัดตัว)';
+                } else if (key === 'T-Shirt') {
+                    itemName = isEng ? 'T-Shirt' : 'เสื้อคอกลม';
+                    sizeName = ' (Free Size)';
+                } else if (key === 'Safari') {
+                    itemName = isEng ? 'Safari Suit' : 'ชุดซาฟารี';
+                    sizeName = isEng ? ' (Custom Size)' : ' (วัดตัว)';
+                } else {
                     for (const confKey in uniformConfig) {
                         const conf = uniformConfig[confKey];
-                        if (conf.prefix !== 'Office' && conf.prefix !== 'T-shirt' && key.startsWith(conf.prefix)) {
-                            itemName = conf.name;
-                            sizeName = ` ไซส์ ${key.replace(conf.prefix, '')}`;
+                        if (conf.prefix !== 'Shirt' && conf.prefix !== 'T-Shirt' && conf.prefix !== 'Safari' && key.startsWith(conf.prefix)) {
+                            itemName = isEng ? conf.nameEn : conf.nameTh;
+                            sizeName = isEng ? ` Size ${key.replace(conf.prefix, '')}` : ` ไซส์ ${key.replace(conf.prefix, '')}`;
                             break;
                         }
                     }
@@ -219,7 +247,7 @@
                 list.innerHTML += `
                     <li class="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-100">
                         <span class="font-medium text-gray-700">${itemName}<span class="font-bold text-[#06C755]">${sizeName}</span></span>
-                        <span class="font-bold text-gray-800">${qty} ตัว</span>
+                        <span class="font-bold text-gray-800">${qty} ${isEng ? 'pcs' : 'ตัว'}</span>
                     </li>
                 `;
             }
@@ -233,51 +261,39 @@
             activeConditionItems = conditionRules[condValue];
 
             if (!activeConditionItems) {
-                container.innerHTML = '<p class="text-red-500 text-center font-bold p-4 bg-red-50 rounded-lg">ไม่พบข้อมูลเงื่อนไขสิทธิ์ (A-E) สำหรับพนักงานท่านนี้ กรุณาติดต่อ HR</p>';
-                document.querySelector('button[onclick="submitData()"]').classList.add('hidden');
+                container.innerHTML = `<p class="text-red-500 text-center font-bold p-4 bg-red-50 rounded-lg">${isEng ? 'Quota condition not found. Please contact HR.' : 'ไม่พบข้อมูลเงื่อนไขสิทธิ์ (A-E) สำหรับพนักงานท่านนี้ กรุณาติดต่อ HR'}</p>`;
+                document.getElementById('submitBtn').classList.add('hidden');
                 return;
             }
 
             activeConditionItems.forEach(req => {
                 const config = uniformConfig[req.id];
-                const isShared = req.shared === 'shop'; 
+                const displayName = isEng ? config.nameEn : config.nameTh;
+                const qtyLabel = isEng ? "Quantity (pcs)" : "จำนวน (ตัว)";
                 
                 let sizeHtml = '';
-                if (config.sizes.length === 1 && config.sizes[0] === 'FreeSize') {
-                    sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">Free Size</div>`;
-                } else if (config.sizes.length === 0) {
-                    sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">ไม่ต้องระบุไซส์</div>`;
+                
+                if (config.sizes.length === 1 && (config.sizes[0] === 'Free Size' || config.sizes[0] === 'วัดตัว')) {
+                    let displayText = config.sizes[0];
+                    if (isEng && config.sizeEn) displayText = config.sizeEn;
+                    sizeHtml = `<div class="w-2/3 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg border border-gray-300 text-center font-bold">${displayText}</div>`;
                 } else {
+                    const selectLabel = isEng ? "-- Select Size --" : "-- เลือกไซส์ --";
                     sizeHtml = `<select id="sizeSelect_${req.id}" class="w-2/3 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#06C755] font-bold text-[#06C755]">
-                        <option value="">-- เลือกไซส์ --</option>`;
+                        <option value="">${selectLabel}</option>`;
                     config.sizes.forEach(size => {
                         sizeHtml += `<option value="${size}">${size}</option>`;
                     });
                     sizeHtml += `</select>`;
                 }
 
-                let qtyHtml = '';
-                let extraNote = '';
-                if (isShared) {
-                    qtyHtml = `
-                    <div class="flex items-center border border-slate-400 rounded-md overflow-hidden w-1/3 h-10">
-                        <button type="button" class="bg-slate-400 text-white w-10 h-full flex items-center justify-center hover:bg-slate-500 text-xl font-bold transition" onclick="adjustShopQty('${req.id}', -1)">−</button>
-                        <input type="text" id="qtyInput_${req.id}" class="shop-qty w-full h-full text-center outline-none font-bold text-gray-800 bg-white" value="${req.qty}" readonly>
-                        <button type="button" class="bg-slate-400 text-white w-10 h-full flex items-center justify-center hover:bg-slate-500 text-xl font-bold transition" onclick="adjustShopQty('${req.id}', 1)">+</button>
-                    </div>`;
-                    if(req.id === 'short') {
-                        extraNote = `<p class="text-xs text-blue-600 mb-2 font-bold">💡 เสื้อช็อป (สั้น/ยาว) กดเพิ่มลดได้ ระบบจะคำนวณให้รวมกันได้ 2 ตัวอัตโนมัติ</p>`;
-                    }
-                } else {
-                    qtyHtml = `<input type="number" id="qtyInput_${req.id}" class="w-1/3 h-10 text-center border border-gray-300 bg-gray-100 rounded-lg outline-none text-gray-500 font-bold" value="${req.qty}" readonly>`;
-                }
+                let qtyHtml = `<input type="number" id="qtyInput_${req.id}" class="w-1/3 h-10 text-center border border-gray-300 bg-gray-100 rounded-lg outline-none text-gray-500 font-bold" value="${req.qty}" readonly>`;
 
                 let html = `
-                ${extraNote}
                 <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="font-bold text-gray-700 text-lg">${config.name}</label>
-                        <span class="text-xs text-gray-500">จำนวน (ตัว)</span>
+                        <label class="font-bold text-gray-700 text-lg">${displayName}</label>
+                        <span class="text-xs text-gray-500">${qtyLabel}</span>
                     </div>
                     <div class="flex space-x-2">
                         ${sizeHtml}
@@ -289,39 +305,7 @@
             });
         }
 
-        function adjustShopQty(clickedId, change) {
-            const input = document.getElementById(`qtyInput_${clickedId}`);
-            if (!input) return;
-
-            let currentVal = parseInt(input.value) || 0;
-            let newVal = currentVal + change;
-
-            if (newVal < 0) newVal = 0;
-            if (newVal > 2) newVal = 2;
-
-            if (currentVal === newVal) return; 
-
-            input.value = newVal;
-
-            const otherId = clickedId === 'short' ? 'long' : 'short';
-            const otherInput = document.getElementById(`qtyInput_${otherId}`);
-            
-            if (otherInput) {
-                otherInput.value = 2 - newVal;
-            }
-        }
-
         async function submitData() {
-            const shopInputs = document.querySelectorAll('.shop-qty');
-            if (shopInputs.length > 0) {
-                let shopTotal = 0;
-                shopInputs.forEach(input => shopTotal += (parseInt(input.value) || 0));
-                if (shopTotal !== 2) {
-                    alert('กรุณากดเลือกจำนวนเสื้อช็อป (แขนสั้น + แขนยาว) ให้รวมกันได้ 2 ตัวพอดีครับ');
-                    return;
-                }
-            }
-
             const selections = {};
             let hasData = false;
 
@@ -334,15 +318,13 @@
                 if (qty > 0) {
                     let fieldName = '';
                     
-                    if (config.sizes.length === 1 && config.sizes[0] === 'FreeSize') {
-                        fieldName = config.prefix; 
-                    } else if (config.sizes.length === 0) {
+                    if (config.sizes.length === 1 && (config.sizes[0] === 'Free Size' || config.sizes[0] === 'วัดตัว')) {
                         fieldName = config.prefix; 
                     } else {
                         const sizeSelect = document.getElementById(`sizeSelect_${req.id}`);
                         const size = sizeSelect.value;
                         if (!size) {
-                            alert(`กรุณาเลือกไซส์สำหรับ ${config.name}`);
+                            alert(isEng ? `Please select a size for ${config.nameEn}` : `กรุณาเลือกไซส์สำหรับ ${config.nameTh}`);
                             return;
                         }
                         fieldName = config.prefix + size; 
@@ -354,14 +336,14 @@
             }
 
             if (!hasData) {
-                alert('กรุณาระบุข้อมูลอย่างน้อย 1 รายการ');
+                alert(isEng ? 'Please specify at least 1 item.' : 'กรุณาระบุข้อมูลอย่างน้อย 1 รายการ');
                 return;
             }
 
-            if(!confirm('ยืนยันส่งข้อมูลไซส์ยูนิฟอร์มใช่หรือไม่?')) return;
+            if(!confirm(isEng ? 'Confirm submit uniform sizes?' : 'ยืนยันส่งข้อมูลไซส์ยูนิฟอร์มใช่หรือไม่?')) return;
 
             document.getElementById('submit-loading').classList.remove('hidden');
-            document.querySelector('button[onclick="submitData()"]').classList.add('hidden');
+            document.getElementById('submitBtn').classList.add('hidden');
 
             const payload = {
                 lineUid: lineUid,
@@ -379,13 +361,13 @@
                     document.getElementById('section-survey').classList.add('hidden');
                     document.getElementById('section-success').classList.remove('hidden');
                 } else {
-                    alert('เกิดข้อผิดพลาด: ' + result.message);
-                    document.querySelector('button[onclick="submitData()"]').classList.remove('hidden');
+                    alert((isEng ? 'Error: ' : 'เกิดข้อผิดพลาด: ') + result.message);
+                    document.getElementById('submitBtn').classList.remove('hidden');
                 }
             } catch (error) {
-                alert('ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่');
+                alert(isEng ? 'Unable to save data. Please try again.' : 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่');
                 console.error(error);
-                document.querySelector('button[onclick="submitData()"]').classList.remove('hidden');
+                document.getElementById('submitBtn').classList.remove('hidden');
             } finally {
                 document.getElementById('submit-loading').classList.add('hidden');
             }
