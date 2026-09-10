@@ -111,28 +111,38 @@
             'long': { name: 'เสื้อช็อปแขนยาว', prefix: 'l', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] },
             'trousers': { name: 'กางเกง', prefix: 't', sizes: ['28','30','32','34','36','38','40','42','44','46'] },
             'polo': { name: 'เสื้อโปโล', prefix: 'p', sizes: ['SS','S','M','L','XL','2XL','3XL','4XL'] }, 
-            'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-shirt', sizes: ['FreeSize'] }, 
-            'safari': { name: 'เสื้อซาฟารี', prefix: 'd', sizes: ['S','M','L','XL','2XL','3XL'] }, 
-            'safari_pants': { name: 'กางเกงซาฟารี', prefix: 'd', sizes: ['28','30','32','34','36','38','40'] },
-            'office': { name: 'เสื้อเชิ๊ตออฟฟิต', prefix: 'Office', sizes: [] }
+            'tshirt': { name: 'เสื้อคอกลม', prefix: 'T-Shirt', sizes: [] }, 
+            'safari': { name: 'ชุดซาฟารี', prefix: 'Safari', sizes: [] }, 
+            'shirt': { name: 'เสื้อเชิ้ต', prefix: 'Shirt', sizes: [] }
         };
 
         const conditionRules = {
             'A': [
-                { id: 'short', qty: 2 }, { id: 'long', qty: 1 }, { id: 'trousers', qty: 3 }, { id: 'tshirt', qty: 3 }
+                { id: 'long', qty: 1 }, { id: 'short', qty: 2 }, { id: 'trousers', qty: 3 }, { id: 'tshirt', qty: 3 }
+            ],
+            'A1': [
+                { id: 'short', qty: 3 }, { id: 'trousers', qty: 3 }, { id: 'tshirt', qty: 3 }
+            ],
+            'A2': [
+                { id: 'long', qty: 3 }, { id: 'trousers', qty: 3 }, { id: 'tshirt', qty: 3 }
             ],
             'B': [
-                { id: 'short', qty: 0, shared: 'shop' }, { id: 'long', qty: 0, shared: 'shop' }, 
-                { id: 'trousers', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
+                { id: 'long', qty: 1 }, { id: 'short', qty: 1 }, { id: 'trousers', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
+            ],
+            'B1': [
+                { id: 'long', qty: 2 }, { id: 'trousers', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
+            ],
+            'B2': [
+                { id: 'short', qty: 2 }, { id: 'trousers', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
             ],
             'C': [
                 { id: 'long', qty: 4 }, { id: 'trousers', qty: 4 }
             ],
             'D': [
-                { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }, { id: 'safari', qty: 2 }, { id: 'safari_pants', qty: 2 }
+                { id: 'safari', qty: 2 }, { id: 'polo', qty: 2 }, { id: 'tshirt', qty: 3 }
             ],
             'E': [
-                { id: 'office', qty: 4 }, { id: 'polo', qty: 2 }
+                { id: 'polo', qty: 2 }, { id: 'shirt', qty: 4 }
             ]
         };
 
@@ -192,8 +202,9 @@
                 let itemName = key;
                 let sizeName = '';
 
-                if (key === 'Office') itemName = 'เสื้อเชิ๊ตออฟฟิต';
-                else if (key === 'T-shirt') itemName = 'เสื้อคอกลม';
+                if (key === 'Shirt') itemName = 'เสื้อเชิ้ต';
+                else if (key === 'T-Shirt') itemName = 'เสื้อคอกลม';
+                else if (key === 'Safari') itemName = 'ชุดซาฟารี';
                 else {
                     for (const confKey in uniformConfig) {
                         const conf = uniformConfig[confKey];
