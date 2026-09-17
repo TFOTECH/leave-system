@@ -16,18 +16,12 @@
       box-sizing: border-box;
     }
     .card {
-      background-color: #ffffff;
-      width: 100%; max-width: 400px;
+      background-color: #ffffff; width: 100%; max-width: 400px;
       border-radius: 20px; padding: 25px 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-      text-align: center; margin-top: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); text-align: center; margin-top: 10px;
     }
-    h2 {
-      margin-top: 0; font-size: 22px; font-weight: 700;
-      color: #0369a1; margin-bottom: 20px;
-    }
+    h2 { margin-top: 0; font-size: 22px; font-weight: 700; color: #0369a1; margin-bottom: 20px; }
     
-    /* กล่องข้อมูลพนักงาน */
     .profile-box {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
       padding: 15px; margin-bottom: 15px; text-align: left;
@@ -35,7 +29,6 @@
     .profile-box .name { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
     .profile-box .emp-id { font-size: 14px; color: #64748b; font-weight: 600; }
     
-    /* กล่องนาฬิกา */
     .clock-box {
       background: #ffffff; border: 2px solid #e0f2fe; border-radius: 15px;
       padding: 15px; margin-bottom: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
@@ -45,14 +38,10 @@
       background: linear-gradient(90deg, #0284c7, #2563eb);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .clock-box .date {
-      font-size: 15px; color: #64748b; font-weight: 600; margin-top: 2px;
-    }
+    .clock-box .date { font-size: 15px; color: #64748b; font-weight: 600; margin-top: 2px; }
 
-    /* กล่องเลือกประเภทงาน (Radio Buttons) */
     .action-group {
-      background: #f1f5f9; border-radius: 15px; padding: 10px; margin-bottom: 20px;
-      text-align: left;
+      background: #f1f5f9; border-radius: 15px; padding: 10px; margin-bottom: 20px; text-align: left;
     }
     .action-option {
       display: flex; align-items: center; padding: 12px 15px;
@@ -60,47 +49,55 @@
     }
     .action-option:last-child { margin-bottom: 0; }
     .action-option:hover { background: #e2e8f0; }
-    .action-option input[type="radio"] {
-      width: 18px; height: 18px; margin-right: 12px; accent-color: #0284c7; cursor: pointer;
-    }
+    .action-option input[type="radio"] { width: 18px; height: 18px; margin-right: 12px; accent-color: #0284c7; cursor: pointer; }
     .action-option span { font-size: 16px; font-weight: 600; color: #334155; }
 
-    /* ปุ่มสแกน */
     button.scan-btn {
-      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px;
-      cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700;
+      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-weight: 700;
       background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff;
       box-shadow: 0 6px 15px rgba(2, 132, 199, 0.3); transition: 0.3s;
     }
     button.scan-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
-    button.scan-btn:active { transform: scale(0.98); }
     
-    #reader { width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; }
     #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; line-height: 1.5; }
+    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; }
     .error-box { color: #dc2626; font-size: 14px; background: #fef2f2; padding: 10px; border-radius: 8px; margin-top: 10px; word-wrap: break-word;}
+
+    /* ตั้งค่า Overlay สแกนเนอร์เต็มจอ */
+    #scannerOverlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.95); z-index: 9999; flex-direction: column;
+    }
+    .scanner-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 20px; background: #0f172a; color: #ffffff;
+    }
+    .scanner-topbar span { font-size: 18px; font-weight: 700; }
+    .btn-close {
+      background: #ef4444; color: #fff; border: none; padding: 8px 16px;
+      border-radius: 8px; font-family: 'Sarabun', sans-serif; font-weight: 600; cursor: pointer;
+    }
+    #reader { width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
 
   <div id="loadingScreen" class="loading-page">⏳ กำลังตรวจสอบสิทธิ์การใช้งาน...</div>
 
+  <!-- หน้าจอหลัก -->
   <div class="card" id="mainScreen" style="display: none;">
     <h2>ระบบบันทึกงานคนขับรถ</h2>
-    
-    <!-- ข้อมูลพนักงาน -->
     <div class="profile-box">
       <div class="name">👤 <span id="displayName">-</span></div>
       <div class="emp-id">รหัสพนักงาน: <span id="displayEmpId">-</span></div>
     </div>
     
-    <!-- นาฬิกา -->
     <div class="clock-box">
       <div class="time" id="currentTime">00:00:00</div>
       <div class="date" id="currentDate">-- -- ----</div>
     </div>
 
-    <!-- เลือกประเภทงาน -->
     <div class="action-group">
       <label class="action-option">
         <input type="radio" name="actionType" value="เข้างาน" checked>
@@ -117,32 +114,37 @@
     </div>
     
     <button id="scanBtn" class="scan-btn" onclick="startScanner()">📷 สแกน QR และบันทึกพิกัด</button>
-    
     <div id="status"></div>
+  </div>
+
+  <!-- หน้าจอเปิดกล้องสแกน (ซ่อนไว้ก่อน) -->
+  <div id="scannerOverlay">
+    <div class="scanner-topbar">
+      <span>📷 สแกน QR Code</span>
+      <button class="btn-close" onclick="cancelScanner()">ปิดกล้อง</button>
+    </div>
     <div id="reader"></div>
   </div>
 
   <script>
-    var LIFF_ID = "2011288511-4Tt1UMUG";
+    var LIFF_ID = "2011288511-4Tt1UMUG"; 
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxmpB3o0vTZwsFocnEe5VWDydWpmkTXN3H665SDPIvjF1IegvYl0s4dNiNTyMWfZE6J_Q/exec";
     var currentEmpId = "";
+    let html5QrCode;
 
-    // ฟังก์ชันอัปเดตนาฬิกา
     function updateClock() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
       document.getElementById('currentTime').innerText = `${hours}:${minutes}:${seconds}`;
-
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       document.getElementById('currentDate').innerText = now.toLocaleDateString('th-TH', options);
     }
-    setInterval(updateClock, 1000); // ให้อัปเดตทุก 1 วินาที
+    setInterval(updateClock, 1000);
 
     window.onload = async function() {
-      updateClock(); // เรียกใช้งานนาฬิกาทันทีตอนเปิดแอป
-      
+      updateClock();
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
@@ -162,7 +164,6 @@
                 currentEmpId = data.empId;
                 document.getElementById("displayName").innerText = data.name;
                 document.getElementById("displayEmpId").innerText = data.empId;
-                
                 document.getElementById("loadingScreen").style.display = "none";
                 document.getElementById("mainScreen").style.display = "block";
               } else {
@@ -170,32 +171,33 @@
                 window.location.href = "register.html"; 
               }
             } catch(e) {
-              document.getElementById("loadingScreen").innerHTML = `❌ การเชื่อมต่อผิดพลาด<br><div class="error-box">ลืมเปลี่ยนลิงก์ GAS_URL หรือสิทธิ์ไม่ถูกต้อง</div>`;
+              document.getElementById("loadingScreen").innerHTML = `❌ การเชื่อมต่อผิดพลาด`;
             }
           }).catch((err) => {
-            document.getElementById("loadingScreen").innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์<br><div class="error-box">${err.message}</div>`;
+            document.getElementById("loadingScreen").innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์`;
           });
         }
       } catch (err) {
-        document.getElementById("loadingScreen").innerHTML = `❌ LINE Error<br><div class="error-box">${err.message}</div>`;
+        document.getElementById("loadingScreen").innerHTML = `❌ LINE Error: ${err.message}`;
       }
     };
-
-    let html5QrCode;
 
     function startScanner() {
       const statusDiv = document.getElementById("status");
       const scanBtn = document.getElementById("scanBtn");
       
       scanBtn.disabled = true;
-      statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังค้นหาตำแหน่ง GPS...<br>(กรุณากดอนุญาตการเข้าถึงตำแหน่ง)</span>";
+      statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังค้นหาตำแหน่ง GPS...</span>";
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           position => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            statusDiv.innerHTML = "<span style='color:#059669;'>✅ ได้พิกัดแล้ว กำลังเปิดกล้อง...</span>";
+            statusDiv.innerHTML = ""; // ล้างข้อความ
+
+            // เปิดหน้าจอ Overlay
+            document.getElementById("scannerOverlay").style.display = "flex";
 
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
@@ -203,21 +205,17 @@
               { fps: 10, qrbox: { width: 250, height: 250 } },
               (decodedText) => {
                 html5QrCode.stop().then(() => {
-                  document.getElementById("reader").style.display = "none";
+                  // ปิดหน้าจอ Overlay กลับไปหน้าเดิม
+                  document.getElementById("scannerOverlay").style.display = "none";
                   statusDiv.innerHTML = "<span style='color:#0284c7; font-size:18px;'>🚀 กำลังส่งข้อมูลไปยังระบบ...</span>";
                   
-                  // ดึงค่าจากปุ่ม Radio ที่ถูกเลือก
                   const actionType = document.querySelector('input[name="actionType"]:checked').value;
                   
                   fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify({
-                      action: "saveLog",
-                      empId: currentEmpId,
-                      actionType: actionType,
-                      qrData: decodedText,
-                      lat: lat,
-                      lng: lng
+                      action: "saveLog", empId: currentEmpId, actionType: actionType,
+                      qrData: decodedText, lat: lat, lng: lng
                     }),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                   })
@@ -227,34 +225,48 @@
                       let res = JSON.parse(text);
                       if(res.status === "success") {
                         statusDiv.innerHTML = "<span style='color:#059669; font-size: 18px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>🎉 บันทึกข้อมูลสำเร็จ!</span>";
-                        setTimeout(() => { if(liff.isInClient()) { liff.closeWindow(); } else { statusDiv.innerHTML += "<br><span style='font-size:14px; color:#64748b;'>กรุณาปิดหน้าต่างนี้ด้วยตนเอง</span>"; } }, 2000);
+                        setTimeout(() => { if(liff.isInClient()) { liff.closeWindow(); } }, 2000);
                       } else {
                         statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ " + res.message + "</span>";
                         scanBtn.disabled = false;
                       }
                     } catch(e) {
-                      statusDiv.innerHTML = "<span style='color:#059669; font-size: 16px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>✅ ข้อมูลถูกบันทึกลงระบบแล้ว<br><span style='font-size:14px; color:#64748b;'>(สามารถปิดหน้าต่างนี้ได้เลย)</span></span>";
+                      statusDiv.innerHTML = "<span style='color:#059669; font-size: 16px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>✅ บันทึกข้อมูลเรียบร้อยแล้ว</span>";
                     }
                   }).catch(() => {
-                    statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ การเชื่อมต่อขัดข้อง กรุณาลองใหม่</span>";
+                    statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ การเชื่อมต่อขัดข้อง</span>";
                     scanBtn.disabled = false;
                   });
                 });
               },
               (errorMessage) => {}
             ).catch((err) => {
-              statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการเข้าถึงกล้อง</span>";
+              document.getElementById("scannerOverlay").style.display = "none";
+              statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ ไม่สามารถเปิดกล้องได้</span>";
               scanBtn.disabled = false;
             });
           },
           error => {
-            statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ ระบบต้องการพิกัด GPS<br>กรุณาเปิด Location ในมือถือและกดอนุญาตครับ</span>";
+            statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ ระบบต้องการพิกัด GPS กรุณาเปิด Location</span>";
             scanBtn.disabled = false;
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
       } else {
         statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ เบราว์เซอร์นี้ไม่รองรับ GPS</span>";
+      }
+    }
+
+    function cancelScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById("scannerOverlay").style.display = "none";
+          document.getElementById("status").innerHTML = "";
+          document.getElementById("scanBtn").disabled = false;
+        }).catch(err => {
+          document.getElementById("scannerOverlay").style.display = "none";
+          document.getElementById("scanBtn").disabled = false;
+        });
       }
     }
   </script>
