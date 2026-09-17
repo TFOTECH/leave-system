@@ -8,7 +8,7 @@
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 20px;">
     <h2>ลงทะเบียนใช้งานระบบ</h2>
-    <div id="loading">⏳ กำลังดึงข้อมูลจาก LINE...</div>
+    <div id="loading">⏳ กำลังตรวจสอบประวัติการลงทะเบียน...</div>
     
     <div id="registerForm" style="display:none; max-width: 300px; margin: auto;">
         <p>กรุณากรอกรหัสพนักงานของคุณ</p>
@@ -25,8 +25,30 @@
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             userLineId = profile.userId;
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
+            
+            // ----------------------------------------------------
+            // เพิ่มส่วนนี้: เช็คว่าลงทะเบียนไปแล้วหรือยัง
+            // ----------------------------------------------------
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "checkLogin", lineId: userLineId }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // ถ้าเจอว่าเคยลงทะเบียนแล้ว ให้แจ้งเตือนและเด้งไปหน้าสแกนงานเลย
+                    alert("คุณได้ทำการลงทะเบียนไว้แล้ว ระบบจะพาท่านเข้าสู่หน้าบันทึกงาน");
+                    window.location.href = "index.html"; 
+                } else {
+                    // ถ้ายังไม่เคยลงทะเบียน ให้ซ่อนตัวโหลดและโชว์ฟอร์มกรอกข้อมูล
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('registerForm').style.display = 'block';
+                }
+            })
+            .catch(err => {
+                alert("❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล");
+            });
         }
 
         function register() {
@@ -49,6 +71,7 @@
                 else { window.location.reload(); }
             });
         }
+        
         main();
     </script>
 </body>
