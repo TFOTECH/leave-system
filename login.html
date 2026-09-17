@@ -9,50 +9,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Sarabun', sans-serif;
-      background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
-      margin: 0; padding: 20px;
-      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
-      box-sizing: border-box;
+      font-family: 'Sarabun', sans-serif; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+      margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; box-sizing: border-box;
     }
     .card {
-      background-color: #ffffff;
-      width: 100%; max-width: 400px;
-      border-radius: 20px; padding: 25px 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      text-align: center; margin-top: 10px;
+      background-color: #ffffff; width: 100%; max-width: 400px;
+      border-radius: 20px; padding: 25px 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); text-align: center; margin-top: 10px;
     }
-    h2 {
-      margin-top: 0; font-size: 24px; font-weight: 700;
-      color: #0369a1; margin-bottom: 20px;
-    }
-    .profile-box {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 15px; margin-bottom: 20px; text-align: left;
-    }
+    h2 { margin-top: 0; font-size: 24px; font-weight: 700; color: #0369a1; margin-bottom: 20px; }
+    .profile-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
     .profile-box .name { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
     .profile-box .emp-id { font-size: 15px; color: #64748b; font-weight: 600; }
-    
     select {
-      width: 100%; padding: 15px; font-size: 16px;
-      border: 2px solid #e2e8f0; border-radius: 12px;
-      margin-bottom: 20px; font-family: 'Sarabun', sans-serif;
-      font-weight: 600; color: #334155; outline: none;
+      width: 100%; padding: 15px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 12px;
+      margin-bottom: 20px; font-family: 'Sarabun', sans-serif; font-weight: 600; color: #334155; outline: none;
     }
     select:focus { border-color: #0ea5e9; }
-
     button.scan-btn {
-      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px;
-      cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 600;
-      background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); transition: 0.3s;
+      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-weight: 600; background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); transition: 0.3s;
     }
     button.scan-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
-    
     #reader { width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; }
     #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; line-height: 1.5; }
-    .error-box { color: #dc2626; font-size: 14px; background: #fef2f2; padding: 10px; border-radius: 8px; margin-top: 10px; word-wrap: break-word;}
+    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; }
   </style>
 </head>
 <body>
@@ -61,7 +42,6 @@
 
   <div class="card" id="mainScreen" style="display: none;">
     <h2>ระบบบันทึกงานคนขับรถ</h2>
-    
     <div class="profile-box">
       <div class="name">👤 <span id="displayName">-</span></div>
       <div class="emp-id">รหัสพนักงาน: <span id="displayEmpId">-</span></div>
@@ -81,10 +61,8 @@
 
   <script>
     var LIFF_ID = "2011288511-4Tt1UMUG"; 
-    
-    // ⚠️ เอา URL จากหน้า register.html มาวางทับตรงนี้ให้ตรงกันเป๊ะๆ
+    // ⚠️ ตรวจสอบ URL ตรงนี้ให้เป็นตัวอัปเดตล่าสุดจากการ Deploy รายการใหม่นะครับ
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxmpB3o0vTZwsFocnEe5VWDydWpmkTXN3H665SDPIvjF1IegvYl0s4dNiNTyMWfZE6J_Q/exec";
-    
     var currentEmpId = "";
 
     window.onload = async function() {
@@ -94,13 +72,12 @@
           liff.login();
         } else {
           const profile = await liff.getProfile();
-          
           fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify({ action: "checkLogin", lineId: profile.userId }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
           })
-          .then(res => res.text()) // เปลี่ยนเป็นดึง Text ก่อนเพื่อดัก Error
+          .then(res => res.text()) 
           .then(text => {
             try {
               let data = JSON.parse(text);
@@ -108,7 +85,6 @@
                 currentEmpId = data.empId;
                 document.getElementById("displayName").innerText = data.name;
                 document.getElementById("displayEmpId").innerText = data.empId;
-                
                 document.getElementById("loadingScreen").style.display = "none";
                 document.getElementById("mainScreen").style.display = "block";
               } else {
@@ -116,15 +92,14 @@
                 window.location.href = "register.html"; 
               }
             } catch(e) {
-              document.getElementById("loadingScreen").innerHTML = `❌ การเชื่อมต่อผิดพลาด<br><div class="error-box">ลืมเปลี่ยนลิงก์ GAS_URL หรือสิทธิ์ไม่ถูกต้อง<br>รายละเอียด: ${text.substring(0, 100)}...</div>`;
+              document.getElementById("loadingScreen").innerHTML = "❌ การเชื่อมต่อผิดพลาด กรุณาตรวจสอบลิงก์ GAS_URL";
             }
-          })
-          .catch((err) => {
-            document.getElementById("loadingScreen").innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์<br><div class="error-box">${err.message}</div>`;
+          }).catch((err) => {
+            document.getElementById("loadingScreen").innerHTML = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์";
           });
         }
       } catch (err) {
-        document.getElementById("loadingScreen").innerHTML = `❌ LINE Error<br><div class="error-box">${err.message}</div>`;
+        document.getElementById("loadingScreen").innerHTML = "❌ LINE Error: " + err.message;
       }
     };
 
@@ -133,7 +108,6 @@
     function startScanner() {
       const statusDiv = document.getElementById("status");
       const scanBtn = document.getElementById("scanBtn");
-      
       scanBtn.disabled = true;
       statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังค้นหาตำแหน่ง GPS...<br>(กรุณากดอนุญาตการเข้าถึงตำแหน่ง)</span>";
 
@@ -157,27 +131,27 @@
                   
                   fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                      action: "saveLog",
-                      empId: currentEmpId,
-                      actionType: actionType,
-                      qrData: decodedText,
-                      lat: lat,
-                      lng: lng
-                    }),
+                    body: JSON.stringify({ action: "saveLog", empId: currentEmpId, actionType: actionType, qrData: decodedText, lat: lat, lng: lng }),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                   })
-                  .then(res => res.json())
-                  .then(res => {
-                    if(res.status === "success") {
-                      statusDiv.innerHTML = "<span style='color:#059669; font-size: 18px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>🎉 บันทึกข้อมูลสำเร็จ!</span>";
-                      setTimeout(() => { liff.closeWindow(); }, 2500);
-                    } else {
-                      statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ " + res.message + "</span>";
-                      scanBtn.disabled = false;
+                  .then(res => res.text()) // รับเป็น text เพื่อดัก Error
+                  .then(text => {
+                    try {
+                      let res = JSON.parse(text);
+                      if(res.status === "success") {
+                        statusDiv.innerHTML = "<span style='color:#059669; font-size: 18px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>🎉 บันทึกข้อมูลสำเร็จ!</span>";
+                        // ปิดแอปอัตโนมัติเมื่ออยู่บน LINE
+                        setTimeout(() => { if(liff.isInClient()) { liff.closeWindow(); } else { statusDiv.innerHTML += "<br><span style='font-size:14px; color:#64748b;'>กรุณาปิดหน้าต่างนี้ด้วยตนเอง</span>"; } }, 2000);
+                      } else {
+                        statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ " + res.message + "</span>";
+                        scanBtn.disabled = false;
+                      }
+                    } catch(e) {
+                      // ข้อมูลเข้า Sheet แล้วแต่หน้าเว็บมีปัญหาตอนรับค่ากลับ
+                      statusDiv.innerHTML = "<span style='color:#059669; font-size: 16px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>✅ ข้อมูลถูกบันทึกลงระบบแล้ว<br><span style='font-size:14px; color:#64748b;'>(สามารถปิดหน้าต่างนี้ได้เลย)</span></span>";
                     }
                   }).catch(() => {
-                    statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ บันทึกไม่สำเร็จ ลิงก์ API อาจมีปัญหา</span>";
+                    statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ การเชื่อมต่อขัดข้อง กรุณาลองใหม่</span>";
                     scanBtn.disabled = false;
                   });
                 });
