@@ -26,11 +26,11 @@
     </div>
 
     <script>
-        const GAS_API_URL = "ใส่_URL_WEB_APP_ใหม่_ที่นี่"; // URL ตัวเดียวกันกับหน้า Register
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzc-m32tOWL4pHS7fLD2Yw8ej_TkjHJ3ISl-d581YyEtPwasWnkeB4Xv94H1m2_11OT6A/exec"; // URL ตัวเดียวกันกับหน้า Register
         let currentEmpId = "";
 
         async function main() {
-            await liff.init({ liffId: "ใส่_LIFF_ID_ของคุณ" }); // ใส่ LIFF ID (อาจใช้คนละตัวกับ Register หรือตัวเดียวกันก็ได้)
+            await liff.init({ liffId: "2011288511-4Tt1UMUG" }); // ใส่ LIFF ID (อาจใช้คนละตัวกับ Register หรือตัวเดียวกันก็ได้)
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             
