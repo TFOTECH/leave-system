@@ -56,18 +56,6 @@
       border-color: #059669;
       box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
     }
-    #info {
-      min-height: 70px;
-      margin-bottom: 20px;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    .emp-box {
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 14px;
-    }
     button {
       width: 100%;
       padding: 15px;
@@ -96,20 +84,16 @@
     }
     .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; }
     .success { color: #059669; }
-    .details { color: #1e293b; font-weight: 700; font-size: 17px; display: block; }
-    .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="card" id="mainCard">
     <h2>ลงทะเบียนใช้งาน</h2>
-    <div class="subtitle" id="subtitleText">กรุณากรอกรหัสพนักงาน 7 หลัก</div>
+    <div class="subtitle" id="subtitleText">กรุณากรอกรหัสพนักงานของคุณ</div>
     
     <div id="formSection">
-      <!-- จำกัดการพิมพ์ไม่เกิน 7 ตัวอักษร -->
-      <input type="text" id="empId" placeholder="กรอกรหัส 7 หลัก" maxlength="7" oninput="checkData()">
-      
-      <div id="info"></div>
+      <!-- ตั้งให้กรอกได้สูงสุด 7 หลัก และเช็คความยาวทันทีที่พิมพ์ -->
+      <input type="text" id="empId" placeholder="กรอกรหัส 6-7 หลัก" maxlength="7" oninput="checkInputLength()">
       
       <button id="btn" onclick="register()" disabled>ลงทะเบียน</button>
     </div>
@@ -119,9 +103,12 @@
 
   <script>
     var userId = "";
+    // อัปเดต LIFF ID เป็นตัวล่าสุดตามที่คุณแจ้งมา
     var LIFF_ID = "2011288511-CGAR9Z4m"; 
+    // ลิงก์ API ของ Google Apps Script ตัวเดิม
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
 
+    // เมื่อเปิดแอปมา แค่ดึง Line ID แล้วรอให้ผู้ใช้พิมพ์รหัสเอง (ไม่ซ่อนฟอร์ม)
     window.onload = async function() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -130,85 +117,25 @@
         } else {
           const profile = await liff.getProfile();
           userId = profile.userId;
-          
-          // ตรวจสอบว่าเคยลงทะเบียนหรือยังตั้งแต่เปิดแอป
-          document.getElementById("subtitleText").innerHTML = "⏳ กำลังตรวจสอบสิทธิ์...";
-          document.getElementById("formSection").style.display = "none";
-          
-          fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "checkLogin", lineId: userId }),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.status === "success") {
-              // ถ้าลงทะเบียนแล้ว โชว์ข้อความและปิดหน้าต่างอัตโนมัติ
-              document.getElementById("subtitleText").innerHTML = "✅ ท่านได้ลงทะเบียนเรียบร้อยแล้ว";
-              document.getElementById("status").innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px;'>กำลังปิดหน้าต่างนี้...<br>กรุณากดเมนูสแกนงานได้เลยครับ</span>";
-              setTimeout(() => { liff.closeWindow(); }, 3000); // หน่วง 3 วิแล้วปิดหน้าต่าง
-            } else {
-              // ถ้ายังไม่ลงทะเบียน ให้โชว์ฟอร์มกรอกรหัส
-              document.getElementById("subtitleText").innerHTML = "กรุณากรอกรหัสพนักงาน 7 หลัก";
-              document.getElementById("formSection").style.display = "block";
-            }
-          });
         }
       } catch (err) {
         document.getElementById("status").innerHTML = "<span class='error'>LINE Error: " + err.message + "</span>";
       }
     };
 
-    let timer;
-    function checkData() {
-      clearTimeout(timer);
+    // ฟังก์ชันปลดล็อกปุ่มเมื่อพิมพ์ครบ 6 หลักขึ้นไป
+    function checkInputLength() {
       var empId = document.getElementById("empId").value.trim();
-      var infoDiv = document.getElementById("info");
       var btn = document.getElementById("btn");
-
-      // กำหนดให้ค้นหาเมื่อครบ 7 หลักเป๊ะๆ เท่านั้น
-      if (empId.length === 7) { 
-        infoDiv.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูล...</span>";
-        btn.disabled = true;
-        
-        timer = setTimeout(() => {
-          fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "getEmployeeInfo", empId: empId }),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-          })
-          .then(res => res.json())
-          .then(res => {
-            if (res.status === "success") {
-              if (res.currentLineId && res.currentLineId !== "") {
-                // กรณีรหัสนี้ถูกผูกไปแล้ว
-                infoDiv.innerHTML = `<div class="emp-box">
-                  <span class="details">👤 คุณ ${res.name}</span>
-                  <span class="dept-text">แผนก : ${res.department || '-'}</span>
-                  <span class='error' style='margin-top: 8px;'>⚠️ รหัสพนักงานนี้ถูกลงทะเบียนไปแล้ว</span>
-                </div>`;
-              } else {
-                // กรณีรหัสว่าง พร้อมให้ผูก Line
-                infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
-                  <span class="details" style="color: #166534;">👤 คุณ ${res.name}</span>
-                  <span class="dept-text" style="color: #15803d;">แผนก : ${res.department || '-'}</span>
-                </div>`;
-                btn.disabled = false; 
-              }
-            } else {
-              infoDiv.innerHTML = "<span class='error'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
-            }
-          })
-          .catch(() => {
-            infoDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
-          });
-        }, 500);
+      
+      if (empId.length >= 6) { 
+        btn.disabled = false; // ปลดล็อกปุ่ม
       } else {
-        infoDiv.innerHTML = "";
-        btn.disabled = true;
+        btn.disabled = true; // ล็อกปุ่มไว้
       }
     }
 
+    // ฟังก์ชันทำงานเมื่อกดปุ่ม "ลงทะเบียน"
     function register() {
       var empId = document.getElementById("empId").value.trim();
       var btn = document.getElementById("btn");
@@ -219,9 +146,11 @@
         return;
       }
 
+      // ล็อกปุ่มและขึ้นข้อความกำลังตรวจสอบ
       btn.disabled = true;
-      statusDiv.innerHTML = "<span style='color:#0284c7; font-weight: 600;'>⏳ กำลังบันทึกข้อมูล...</span>";
+      statusDiv.innerHTML = "<span style='color:#0284c7; font-weight: 600;'>⏳ กำลังตรวจสอบและบันทึกข้อมูล...</span>";
 
+      // ยิงข้อมูลไปให้ Google Apps Script เช็คและบันทึก
       fetch(GAS_URL, {
         method: 'POST',
         body: JSON.stringify({ action: "registerLineId", empId: empId, lineId: userId }),
@@ -234,12 +163,12 @@
           // ปิดหน้าต่างหลังจากลงทะเบียนสำเร็จ 2 วินาที
           setTimeout(() => { liff.closeWindow(); }, 2000); 
         } else {
-          statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
-          btn.disabled = false;
+          statusDiv.innerHTML = "<span class='error'>⚠️ " + res.message + "</span>";
+          btn.disabled = false; // เปิดปุ่มให้กดลองใหม่ได้
         }
       })
       .catch(() => {
-        statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
+        statusDiv.innerHTML = "<span class='error'>❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่</span>";
         btn.disabled = false;
       });
     }
