@@ -120,7 +120,7 @@
       box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
     }
     #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .error { color: #dc2626; }
+    .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px;}
     .success { color: #059669; }
   </style>
 </head>
@@ -142,6 +142,8 @@
   <script>
     var userId = "";
     var LIFF_ID = "2011288511-CGAR9Z4m"; 
+    
+    // ⚠️ ถ้าคุณได้ลิงก์ใหม่จาก Google อย่าลืมเอามาเปลี่ยนบรรทัดนี้นะครับ
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
     
     var isUserAlreadyRegistered = false; 
@@ -160,29 +162,26 @@
             body: JSON.stringify({ action: "checkLogin", lineId: userId }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
           })
-          .then(res => res.json())
-          .then(data => {
-            if (data.status === "success") {
-              isUserAlreadyRegistered = true;
-              
-              // 1. นำรหัสมาใส่ในช่อง และล็อกไม่ให้พิมพ์แก้
-              var empInput = document.getElementById("empId");
-              empInput.value = data.empId;
-              empInput.disabled = true;
-              
-              // 2. โชว์ข้อมูลของตัวเอง และแจ้งเตือนทันที
-              var wrapper = document.getElementById("infoBoxWrapper");
-              var content = document.getElementById("infoBoxContent");
-              
-              wrapper.style.display = "block";
-              content.innerHTML = `<div class="emp-box">
-                                     <div class="emp-name">👤 คุณ ${data.name}</div>
-                                     <div class="alert-warning" style="margin-top: 15px;">⚠️ ท่านได้ใช้ LINE ID นี้ลงทะเบียนในระบบไปแล้ว!</div>
-                                   </div>`;
-              
-              // 3. ปิดปุ่มลงทะเบียน
-              document.getElementById("btn").disabled = true;
-            }
+          .then(res => res.text()) // ดึงแบบ Text เผื่อ Error
+          .then(text => {
+            try {
+              let data = JSON.parse(text);
+              if (data.status === "success") {
+                isUserAlreadyRegistered = true;
+                var empInput = document.getElementById("empId");
+                empInput.value = data.empId;
+                empInput.disabled = true;
+                
+                var wrapper = document.getElementById("infoBoxWrapper");
+                var content = document.getElementById("infoBoxContent");
+                wrapper.style.display = "block";
+                content.innerHTML = `<div class="emp-box">
+                                       <div class="emp-name">👤 คุณ ${data.name}</div>
+                                       <div class="alert-warning" style="margin-top: 15px;">⚠️ ท่านได้ใช้ LINE ID นี้ลงทะเบียนในระบบไปแล้ว!</div>
+                                     </div>`;
+                document.getElementById("btn").disabled = true;
+              }
+            } catch(e) {} // เงียบไว้ถ้ายังไม่เคยลงทะเบียน
           });
         }
       } catch (err) {
@@ -191,30 +190,40 @@
     };
 
     let timer;
-    function checkData() {
-      if (isUserAlreadyRegistered) return; // ถ้าล็อกอินแล้ว ห้ามค้นหาข้อมูลคนอื่นอีก
+    async function checkData() {
+      if (isUserAlreadyRegistered) return;
       
       clearTimeout(timer);
       var empId = document.getElementById("empId").value.trim();
       var wrapper = document.getElementById("infoBoxWrapper");
       var content = document.getElementById("infoBoxContent");
       var btn = document.getElementById("btn");
-      var statusDiv = document.getElementById("status");
-      statusDiv.innerHTML = "";
+      document.getElementById("status").innerHTML = "";
 
       if (empId.length >= 6) {
         wrapper.style.display = "block";
         content.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูลพนักงาน...</span>";
         btn.disabled = true;
 
-        timer = setTimeout(() => {
-          fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "getEmployeeInfo", empId: empId }),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-          })
-          .then(res => res.json())
-          .then(res => {
+        timer = setTimeout(async () => {
+          try {
+            let response = await fetch(GAS_URL, {
+              method: 'POST',
+              body: JSON.stringify({ action: "getEmployeeInfo", empId: empId }),
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            });
+            
+            // ดักจับ Error หาก Google คืนหน้าล็อกอินมาแทน JSON
+            let text = await response.text();
+            let res;
+            try {
+              res = JSON.parse(text);
+            } catch (err) {
+              content.innerHTML = "<span class='error'>❌ ลิงก์ API หมดอายุ หรือลืมตั้งค่าสิทธิ์ให้เป็น 'ทุกคน (Anyone)' ใน Google Apps Script ครับ</span>";
+              btn.disabled = true;
+              return;
+            }
+
             if (res.status === "success") {
               let html = `<div class="emp-box">
                             <div class="emp-name">👤 คุณ ${res.name}</div>
@@ -229,17 +238,15 @@
               
               html += `</div>`;
               content.innerHTML = html;
-
             } else {
               content.innerHTML = "<span class='error'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
               btn.disabled = true;
             }
-          })
-          .catch(() => {
-            content.innerHTML = "<span class='error'>❌ เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
+          } catch (error) {
+            content.innerHTML = `<span class='error'>❌ การเชื่อมต่อล้มเหลว กรุณาลองใหม่</span>`;
             btn.disabled = true;
-          });
-        }, 600); 
+          }
+        }, 800); 
       } else {
         wrapper.style.display = "none";
         content.innerHTML = "";
