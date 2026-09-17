@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,42 +9,76 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Sarabun', sans-serif; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
-      margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; box-sizing: border-box;
+      font-family: 'Sarabun', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+      margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+      box-sizing: border-box;
     }
     .card {
-      background-color: #ffffff; width: 100%; max-width: 400px;
-      border-radius: 20px; padding: 25px 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); text-align: center; margin-top: 10px;
+      background-color: #ffffff;
+      width: 100%; max-width: 400px;
+      border-radius: 20px; padding: 25px 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      text-align: center; margin-top: 10px;
     }
-    h2 { margin-top: 0; font-size: 24px; font-weight: 700; color: #0369a1; margin-bottom: 20px; }
-    .profile-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
-    .profile-box .name { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
-    .profile-box .emp-id { font-size: 15px; color: #64748b; font-weight: 600; }
+    h2 {
+      margin-top: 0; font-size: 22px; font-weight: 700;
+      color: #0369a1; margin-bottom: 20px;
+    }
     
-    /* สไตล์สำหรับกล่อง Radio Buttons แบบใหม่ */
-    .radio-group {
-      background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 10px; margin-bottom: 20px; text-align: left;
+    /* กล่องข้อมูลพนักงาน */
+    .profile-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 15px; margin-bottom: 15px; text-align: left;
     }
-    .radio-option {
-      display: flex; align-items: center; padding: 12px 15px; cursor: pointer;
-      border-radius: 8px; transition: background 0.2s;
+    .profile-box .name { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
+    .profile-box .emp-id { font-size: 14px; color: #64748b; font-weight: 600; }
+    
+    /* กล่องนาฬิกา */
+    .clock-box {
+      background: #ffffff; border: 2px solid #e0f2fe; border-radius: 15px;
+      padding: 15px; margin-bottom: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
-    .radio-option:hover { background: #e2e8f0; }
-    .radio-option input[type="radio"] {
-      margin-right: 12px; transform: scale(1.3); accent-color: #0369a1;
+    .clock-box .time {
+      font-size: 38px; font-weight: 700; color: #1e293b; letter-spacing: 2px;
+      background: linear-gradient(90deg, #0284c7, #2563eb);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .radio-label { font-size: 16px; font-weight: 600; color: #334155; }
+    .clock-box .date {
+      font-size: 15px; color: #64748b; font-weight: 600; margin-top: 2px;
+    }
 
+    /* กล่องเลือกประเภทงาน (Radio Buttons) */
+    .action-group {
+      background: #f1f5f9; border-radius: 15px; padding: 10px; margin-bottom: 20px;
+      text-align: left;
+    }
+    .action-option {
+      display: flex; align-items: center; padding: 12px 15px;
+      margin-bottom: 5px; border-radius: 10px; cursor: pointer; transition: 0.2s;
+    }
+    .action-option:last-child { margin-bottom: 0; }
+    .action-option:hover { background: #e2e8f0; }
+    .action-option input[type="radio"] {
+      width: 18px; height: 18px; margin-right: 12px; accent-color: #0284c7; cursor: pointer;
+    }
+    .action-option span { font-size: 16px; font-weight: 600; color: #334155; }
+
+    /* ปุ่มสแกน */
     button.scan-btn {
-      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer;
-      font-family: 'Sarabun', sans-serif; font-weight: 600; background: linear-gradient(135deg, #0284c7, #2563eb);
-      color: #ffffff; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); transition: 0.3s;
+      width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px;
+      cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700;
+      background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff;
+      box-shadow: 0 6px 15px rgba(2, 132, 199, 0.3); transition: 0.3s;
     }
     button.scan-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+    button.scan-btn:active { transform: scale(0.98); }
+    
     #reader { width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; }
     #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; }
+    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; line-height: 1.5; }
+    .error-box { color: #dc2626; font-size: 14px; background: #fef2f2; padding: 10px; border-radius: 8px; margin-top: 10px; word-wrap: break-word;}
   </style>
 </head>
 <body>
@@ -53,24 +87,32 @@
 
   <div class="card" id="mainScreen" style="display: none;">
     <h2>ระบบบันทึกงานคนขับรถ</h2>
+    
+    <!-- ข้อมูลพนักงาน -->
     <div class="profile-box">
       <div class="name">👤 <span id="displayName">-</span></div>
       <div class="emp-id">รหัสพนักงาน: <span id="displayEmpId">-</span></div>
     </div>
     
-    <!-- เปลี่ยนจาก Select เป็น Radio Buttons -->
-    <div class="radio-group">
-      <label class="radio-option">
+    <!-- นาฬิกา -->
+    <div class="clock-box">
+      <div class="time" id="currentTime">00:00:00</div>
+      <div class="date" id="currentDate">-- -- ----</div>
+    </div>
+
+    <!-- เลือกประเภทงาน -->
+    <div class="action-group">
+      <label class="action-option">
         <input type="radio" name="actionType" value="เข้างาน" checked>
-        <span class="radio-label">📍 บันทึกเข้างาน (Start)</span>
+        <span>📍 บันทึกเข้างาน (Start)</span>
       </label>
-      <label class="radio-option">
+      <label class="action-option">
         <input type="radio" name="actionType" value="ส่งของ">
-        <span class="radio-label">📦 บันทึกส่งของ (Drop-off)</span>
+        <span>📦 บันทึกส่งของ (Drop-off)</span>
       </label>
-      <label class="radio-option">
+      <label class="action-option">
         <input type="radio" name="actionType" value="เลิกงาน">
-        <span class="radio-label">🏠 บันทึกเลิกงาน (End)</span>
+        <span>🏠 บันทึกเลิกงาน (End)</span>
       </label>
     </div>
     
@@ -81,12 +123,26 @@
   </div>
 
   <script>
-    var LIFF_ID = "2011288511-4Tt1UMUG"; 
-    // ⚠️ นำลิงก์ GAS_URL ตัวล่าสุดมาวางที่นี่
+    var LIFF_ID = "2011288511-4Tt1UMUG";
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxmpB3o0vTZwsFocnEe5VWDydWpmkTXN3H665SDPIvjF1IegvYl0s4dNiNTyMWfZE6J_Q/exec";
     var currentEmpId = "";
 
+    // ฟังก์ชันอัปเดตนาฬิกา
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('currentTime').innerText = `${hours}:${minutes}:${seconds}`;
+
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      document.getElementById('currentDate').innerText = now.toLocaleDateString('th-TH', options);
+    }
+    setInterval(updateClock, 1000); // ให้อัปเดตทุก 1 วินาที
+
     window.onload = async function() {
+      updateClock(); // เรียกใช้งานนาฬิกาทันทีตอนเปิดแอป
+      
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
@@ -106,6 +162,7 @@
                 currentEmpId = data.empId;
                 document.getElementById("displayName").innerText = data.name;
                 document.getElementById("displayEmpId").innerText = data.empId;
+                
                 document.getElementById("loadingScreen").style.display = "none";
                 document.getElementById("mainScreen").style.display = "block";
               } else {
@@ -113,14 +170,14 @@
                 window.location.href = "register.html"; 
               }
             } catch(e) {
-              document.getElementById("loadingScreen").innerHTML = "❌ การเชื่อมต่อผิดพลาด กรุณาตรวจสอบลิงก์ GAS_URL";
+              document.getElementById("loadingScreen").innerHTML = `❌ การเชื่อมต่อผิดพลาด<br><div class="error-box">ลืมเปลี่ยนลิงก์ GAS_URL หรือสิทธิ์ไม่ถูกต้อง</div>`;
             }
           }).catch((err) => {
-            document.getElementById("loadingScreen").innerHTML = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์";
+            document.getElementById("loadingScreen").innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์<br><div class="error-box">${err.message}</div>`;
           });
         }
       } catch (err) {
-        document.getElementById("loadingScreen").innerHTML = "❌ LINE Error: " + err.message;
+        document.getElementById("loadingScreen").innerHTML = `❌ LINE Error<br><div class="error-box">${err.message}</div>`;
       }
     };
 
@@ -129,6 +186,7 @@
     function startScanner() {
       const statusDiv = document.getElementById("status");
       const scanBtn = document.getElementById("scanBtn");
+      
       scanBtn.disabled = true;
       statusDiv.innerHTML = "<span style='color:#0284c7;'>⏳ กำลังค้นหาตำแหน่ง GPS...<br>(กรุณากดอนุญาตการเข้าถึงตำแหน่ง)</span>";
 
@@ -148,12 +206,19 @@
                   document.getElementById("reader").style.display = "none";
                   statusDiv.innerHTML = "<span style='color:#0284c7; font-size:18px;'>🚀 กำลังส่งข้อมูลไปยังระบบ...</span>";
                   
-                  // ดึงค่าจาก Radio Button ที่ถูกเลือก
+                  // ดึงค่าจากปุ่ม Radio ที่ถูกเลือก
                   const actionType = document.querySelector('input[name="actionType"]:checked').value;
                   
                   fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: "saveLog", empId: currentEmpId, actionType: actionType, qrData: decodedText, lat: lat, lng: lng }),
+                    body: JSON.stringify({
+                      action: "saveLog",
+                      empId: currentEmpId,
+                      actionType: actionType,
+                      qrData: decodedText,
+                      lat: lat,
+                      lng: lng
+                    }),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                   })
                   .then(res => res.text())
