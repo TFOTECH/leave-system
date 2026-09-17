@@ -21,7 +21,7 @@
         let userLineId = "";
 
         async function main() {
-            await liff.init({ liffId: "https://liff.line.me/2011288511-DvBqzyS3" });
+            await liff.init({ liffId: "2011288511-CGAR9Z4m" });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             userLineId = profile.userId;
