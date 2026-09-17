@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนพนักงาน</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 20px;">
+    <h2>ลงทะเบียนใช้งานระบบ</h2>
+    <div id="loading">⏳ กำลังดึงข้อมูลจาก LINE...</div>
+    
+    <div id="registerForm" style="display:none; max-width: 300px; margin: auto;">
+        <p>กรุณากรอกรหัสพนักงานของคุณ</p>
+        <input type="text" id="empId" placeholder="เช่น 100001" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+        <button onclick="register()" style="width: 100%; padding: 10px; background: #4CAF50; color: white; border: none;">ยืนยันการลงทะเบียน</button>
+    </div>
+
+    <script>
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzc-m32tOWL4pHS7fLD2Yw8ej_TkjHJ3ISl-d581YyEtPwasWnkeB4Xv94H1m2_11OT6A/exec";
+        let userLineId = "";
+
+        async function main() {
+            await liff.init({ liffId: "https://liff.line.me/2011288511-DvBqzyS3" });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const profile = await liff.getProfile();
+            userLineId = profile.userId;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function register() {
+            const empId = document.getElementById('empId').value;
+            if(!empId) return alert("กรุณาใส่รหัสพนักงาน");
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').innerText = "⏳ กำลังบันทึกข้อมูล...";
+            document.getElementById('registerForm').style.display = 'none';
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "registerLineId", lineId: userLineId, empId: empId }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.status === "success") { window.location.href = "index.html"; } // ไปหน้าสแกน
+                else { window.location.reload(); }
+            });
+        }
+        main();
+    </script>
+</body>
+</html>
