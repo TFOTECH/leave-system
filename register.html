@@ -58,10 +58,15 @@
       outline: none;
       box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
     }
+    input:disabled {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+    }
     
-    /* สไตล์กล่องโชว์ชื่อพนักงาน (เหมือนภาพที่ 2) */
     #infoBoxWrapper {
-      display: none; /* ซ่อนไว้ก่อน พิมพ์ครบค่อยโชว์ */
+      display: none; 
       margin-bottom: 20px;
     }
     .emp-box {
@@ -122,11 +127,10 @@
 <body>
   <div class="card">
     <h2>ลงทะเบียนใช้งาน</h2>
-    <div class="subtitle">กรุณากรอกรหัสพนักงาน 6-7 หลัก</div>
+    <div class="subtitle">กรุณากรอกรหัสพนักงานของคุณ</div>
     
     <input type="text" id="empId" placeholder="กรอกรหัสพนักงาน" maxlength="7" oninput="checkData()">
     
-    <!-- กล่องแสดงข้อมูลพนักงาน -->
     <div id="infoBoxWrapper">
       <div id="infoBoxContent"></div>
     </div>
@@ -138,9 +142,9 @@
   <script>
     var userId = "";
     var LIFF_ID = "2011288511-CGAR9Z4m"; 
-    var GAS_URL = "https://script.google.com/macros/s/AKfycbxY_xoLVweKmjXgFCq-jWpuQ6OF3Ye5Re_oXh6-fh8sqVbAtCSoysXfNSHPi58VqQt97g/exec";
+    var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
     
-    var isUserAlreadyRegistered = false; // ตัวแปรเก็บสถานะว่าคนนี้เคยลงทะเบียนหรือยัง
+    var isUserAlreadyRegistered = false; 
 
     window.onload = async function() {
       try {
@@ -151,7 +155,6 @@
           const profile = await liff.getProfile();
           userId = profile.userId;
 
-          // แอบเช็คหลังบ้านว่า Line ID นี้เคยลงทะเบียนหรือยัง
           fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify({ action: "checkLogin", lineId: userId }),
@@ -160,7 +163,25 @@
           .then(res => res.json())
           .then(data => {
             if (data.status === "success") {
-              isUserAlreadyRegistered = true; // เจอประวัติว่าเคยลงทะเบียนแล้ว
+              isUserAlreadyRegistered = true;
+              
+              // 1. นำรหัสมาใส่ในช่อง และล็อกไม่ให้พิมพ์แก้
+              var empInput = document.getElementById("empId");
+              empInput.value = data.empId;
+              empInput.disabled = true;
+              
+              // 2. โชว์ข้อมูลของตัวเอง และแจ้งเตือนทันที
+              var wrapper = document.getElementById("infoBoxWrapper");
+              var content = document.getElementById("infoBoxContent");
+              
+              wrapper.style.display = "block";
+              content.innerHTML = `<div class="emp-box">
+                                     <div class="emp-name">👤 คุณ ${data.name}</div>
+                                     <div class="alert-warning" style="margin-top: 15px;">⚠️ ท่านได้ใช้ LINE ID นี้ลงทะเบียนในระบบไปแล้ว!</div>
+                                   </div>`;
+              
+              // 3. ปิดปุ่มลงทะเบียน
+              document.getElementById("btn").disabled = true;
             }
           });
         }
@@ -171,6 +192,8 @@
 
     let timer;
     function checkData() {
+      if (isUserAlreadyRegistered) return; // ถ้าล็อกอินแล้ว ห้ามค้นหาข้อมูลคนอื่นอีก
+      
       clearTimeout(timer);
       var empId = document.getElementById("empId").value.trim();
       var wrapper = document.getElementById("infoBoxWrapper");
@@ -193,20 +216,14 @@
           .then(res => res.json())
           .then(res => {
             if (res.status === "success") {
-              // ประกอบหน้าตา HTML ของกล่องข้อมูล
               let html = `<div class="emp-box">
                             <div class="emp-name">👤 คุณ ${res.name}</div>
                             <div class="emp-dept">แผนก : ${res.department || '-'}</div>`;
               
-              // ตรวจสอบเงื่อนไขข้อผิดพลาด
-              if (isUserAlreadyRegistered) {
-                html += `<div class="alert-warning">⚠️ ท่านได้ใช้ LINE ID นี้ลงทะเบียนระบบไปแล้ว</div>`;
-                btn.disabled = true;
-              } else if (res.currentLineId && res.currentLineId !== "") {
+              if (res.currentLineId && res.currentLineId !== "") {
                 html += `<div class="alert-warning">⚠️ รหัสพนักงานนี้ถูกลงทะเบียนด้วย LINE อื่นไปแล้ว</div>`;
                 btn.disabled = true;
               } else {
-                // ข้อมูลถูกต้อง ไม่ซ้ำ เปิดปุ่มให้กดลงทะเบียนได้
                 btn.disabled = false;
               }
               
@@ -222,9 +239,8 @@
             content.innerHTML = "<span class='error'>❌ เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
             btn.disabled = true;
           });
-        }, 600); // หน่วงเวลา 0.6 วิ หลังพิมพ์เสร็จค่อยเช็ค
+        }, 600); 
       } else {
-        // ถ้าพิมพ์ไม่ครบ 6 หลัก ให้ซ่อนกล่องและล็อกปุ่ม
         wrapper.style.display = "none";
         content.innerHTML = "";
         btn.disabled = true;
