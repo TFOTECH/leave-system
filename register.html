@@ -1,188 +1,248 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียนพนักงาน</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
-        body {
-            margin: 0; padding: 20px;
-            background: linear-gradient(135deg, #e0f2f1 0%, #a7ffeb 100%);
-            min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .card {
-            background: white; border-radius: 20px;
-            padding: 30px 20px; width: 100%; max-width: 400px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center;
-        }
-        h2 { color: #00796b; margin-top: 0; font-size: 24px; }
-        p.subtitle { color: #666; font-size: 14px; margin-bottom: 25px; }
-        
-        input[type="text"] {
-            width: 100%; padding: 15px; font-size: 18px; text-align: center;
-            border: 1px solid #ccc; border-radius: 10px; margin-bottom: 20px;
-            outline: none; transition: 0.3s;
-        }
-        input[type="text"]:focus { border-color: #00796b; box-shadow: 0 0 0 2px rgba(0,121,107,0.2); }
-        
-        .info-box {
-            background: #f8f9fa; border: 1px dashed #ccc; border-radius: 10px;
-            padding: 15px; margin-bottom: 20px; display: none; text-align: center;
-        }
-        .info-box h4 { margin: 0 0 5px 0; color: #333; font-size: 16px; }
-        .info-box p { margin: 0; color: #555; font-size: 14px; }
-        .alert-error {
-            background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px;
-            font-size: 13px; margin-top: 10px; font-weight: 600; display: none;
-        }
-        
-        button {
-            width: 100%; padding: 15px; background: #e0e0e0; color: #999;
-            border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
-            cursor: not-allowed; transition: 0.3s;
-        }
-        button.active {
-            background: #00796b; color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,121,107,0.3);
-        }
-        
-        /* Modal สำหรับแจ้งเตือนแบบสวยงาม */
-        #modalOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-            z-index: 1000; display: none;
-        }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; text-align: center; max-width: 300px; width: 90%; }
-        .modal-content h3 { margin-top: 0; color: #333; }
-        .modal-content p { color: #666; margin-bottom: 20px; }
-        .modal-btn { background: #333; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dcfce7 100%);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background-color: #ffffff;
+      width: 92%;
+      max-width: 400px;
+      border-radius: 20px;
+      padding: 35px 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      box-sizing: border-box;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #059669, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 25px;
+      font-size: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      font-family: 'Sarabun', sans-serif;
+      letter-spacing: 1px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #059669;
+      box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    }
+    #info {
+      min-height: 70px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .emp-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Sarabun', sans-serif;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 185, 0, 0.2);
+    }
+    button:disabled {
+      background-color: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button:not(:disabled) {
+      background: linear-gradient(135deg, #00B900, #059669);
+      color: #ffffff;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .error { color: #dc2626; font-size: 14px; display: block; padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 10px; }
+    .success { color: #059669; }
+    .details { color: #1e293b; font-weight: 700; font-size: 17px; display: block; }
+    .dept-text { color: #475569; font-size: 15px; margin-top: 4px; display: block; font-weight: 600; }
+  </style>
 </head>
 <body>
-
-    <div class="card" id="mainCard">
-        <h2>ลงทะเบียนใช้งาน</h2>
-        <p class="subtitle">กรุณากรอกรหัสพนักงาน</p>
-        
-        <input type="text" id="empId" placeholder="กรอกรหัสพนักงาน" maxlength="7" onkeyup="checkEmployeeInfo()">
-        
-        <div id="loadingText" style="display:none; color:#00796b; margin-bottom:15px; font-size:14px;">⏳ กำลังค้นหาข้อมูล...</div>
-        
-        <div class="info-box" id="infoBox">
-            <h4>👤 <span id="showName"></span></h4>
-            <p>แผนก : <span id="showDept"></span></p>
-            <div class="alert-error" id="errorMsg">⚠️ รหัสนี้ถูกใช้งานไปแล้ว หรือไม่พบข้อมูล</div>
-        </div>
-
-        <button id="submitBtn" onclick="register()" disabled>ลงทะเบียน</button>
+  <div class="card" id="mainCard">
+    <h2>ลงทะเบียนใช้งาน</h2>
+    <div class="subtitle" id="subtitleText">กรุณากรอกรหัสพนักงาน 7 หลัก</div>
+    
+    <div id="formSection">
+      <!-- จำกัดการพิมพ์ไม่เกิน 7 ตัวอักษร -->
+      <input type="text" id="empId" placeholder="กรอกรหัส 7 หลัก" maxlength="7" oninput="checkData()">
+      
+      <div id="info"></div>
+      
+      <button id="btn" onclick="register()" disabled>ลงทะเบียน</button>
     </div>
+    
+    <div id="status"></div>
+  </div>
 
-    <!-- Modal แจ้งเตือนกรณีลงทะเบียนซ้ำตั้งแต่เปิดแอป -->
-    <div id="modalOverlay">
-        <div class="modal-content">
-            <h3>tfotech.github.io</h3>
-            <p>คุณได้ทำการลงทะเบียนไว้แล้ว ระบบจะพาท่านเข้าสู่หน้าบันทึกงาน</p>
-            <a href="index.html" class="modal-btn">ตกลง</a>
-        </div>
-    </div>
+  <script>
+    var userId = "";
+    var LIFF_ID = "2011288511-DvBqzyS3"; 
+    var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
 
-    <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzCdSF16sBAj1qJZdz1Iwrls1ySeEHOdMYEIo3wzFAZ1s_RaUD4hpKISJvaqU2uYqVkBw/exec";
-        let userLineId = "";
-        let isReadyToRegister = false;
-
-        async function main() {
-            await liff.init({ liffId: "2011288511-CGAR9Z4m" });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            const profile = await liff.getProfile();
-            userLineId = profile.userId;
-            
-            // เช็คว่าเคยลงทะเบียนหรือยัง
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "checkLogin", lineId: userLineId }),
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            }).then(res => res.json()).then(data => {
-                if (data.status === "success") {
-                    document.getElementById('modalOverlay').style.display = 'flex'; // โชว์ Modal เด้งไปหน้าสแกน
-                }
-            });
-        }
-
-        // ฟังก์ชันดึงข้อมูลพนักงานเมื่อพิมพ์รหัส
-        let typingTimer;
-        function checkEmployeeInfo() {
-            clearTimeout(typingTimer);
-            const empInput = document.getElementById('empId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const infoBox = document.getElementById('infoBox');
-            
-            submitBtn.classList.remove('active');
-            submitBtn.disabled = true;
-            infoBox.style.display = 'none';
-            isReadyToRegister = false;
-
-            if (empInput.length >= 6) { // ให้เริ่มค้นหาเมื่อพิมพ์ครบ 6 หลักขึ้นไป
-                document.getElementById('loadingText').style.display = 'block';
-                
-                typingTimer = setTimeout(() => {
-                    fetch(GAS_API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: "getEmployeeInfo", empId: empInput }),
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                    }).then(res => res.json()).then(data => {
-                        document.getElementById('loadingText').style.display = 'none';
-                        infoBox.style.display = 'block';
-                        
-                        if (data.status === "success") {
-                            document.getElementById('showName').innerText = "คุณ " + data.name;
-                            document.getElementById('showDept').innerText = data.department || "-";
-                            
-                            if (data.currentLineId && data.currentLineId !== "") {
-                                // ถ้าเคยผูก Line อื่นไปแล้ว
-                                document.getElementById('errorMsg').innerText = "⚠️ ท่านได้ใช้ LINE ID นี้ลงทะเบียนด้วยรหัสอื่นไปแล้ว";
-                                document.getElementById('errorMsg').style.display = 'block';
-                            } else {
-                                // พร้อมลงทะเบียน
-                                document.getElementById('errorMsg').style.display = 'none';
-                                submitBtn.classList.add('active');
-                                submitBtn.disabled = false;
-                                isReadyToRegister = true;
-                            }
-                        } else {
-                            // ไม่พบรหัส
-                            document.getElementById('showName').innerText = "-";
-                            document.getElementById('showDept').innerText = "-";
-                            document.getElementById('errorMsg').innerText = "⚠️ ไม่พบรหัสพนักงานนี้ในระบบ";
-                            document.getElementById('errorMsg').style.display = 'block';
-                        }
-                    });
-                }, 800); // หน่วงเวลา 0.8 วิ หลังพิมพ์เสร็จเพื่อไม่ให้ยิง API รัวเกินไป
+    window.onload = async function() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          const profile = await liff.getProfile();
+          userId = profile.userId;
+          
+          // ตรวจสอบว่าเคยลงทะเบียนหรือยังตั้งแต่เปิดแอป
+          document.getElementById("subtitleText").innerHTML = "⏳ กำลังตรวจสอบสิทธิ์...";
+          document.getElementById("formSection").style.display = "none";
+          
+          fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "checkLogin", lineId: userId }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === "success") {
+              // ถ้าลงทะเบียนแล้ว โชว์ข้อความและปิดหน้าต่างอัตโนมัติ
+              document.getElementById("subtitleText").innerHTML = "✅ ท่านได้ลงทะเบียนเรียบร้อยแล้ว";
+              document.getElementById("status").innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px;'>กำลังปิดหน้าต่างนี้...<br>กรุณากดเมนูสแกนงานได้เลยครับ</span>";
+              setTimeout(() => { liff.closeWindow(); }, 3000); // หน่วง 3 วิแล้วปิดหน้าต่าง
+            } else {
+              // ถ้ายังไม่ลงทะเบียน ให้โชว์ฟอร์มกรอกรหัส
+              document.getElementById("subtitleText").innerHTML = "กรุณากรอกรหัสพนักงาน 7 หลัก";
+              document.getElementById("formSection").style.display = "block";
             }
+          });
         }
+      } catch (err) {
+        document.getElementById("status").innerHTML = "<span class='error'>LINE Error: " + err.message + "</span>";
+      }
+    };
 
-        function register() {
-            if (!isReadyToRegister) return;
-            const empId = document.getElementById('empId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerText = "กำลังบันทึก...";
-            
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "registerLineId", lineId: userLineId, empId: empId }),
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            }).then(res => res.json()).then(data => {
-                if(data.status === "success") { 
-                    window.location.href = "index.html"; 
-                } else { 
-                    alert(data.message); submitBtn.innerText = "ลงทะเบียน";
-                }
-            });
+    let timer;
+    function checkData() {
+      clearTimeout(timer);
+      var empId = document.getElementById("empId").value.trim();
+      var infoDiv = document.getElementById("info");
+      var btn = document.getElementById("btn");
+
+      // กำหนดให้ค้นหาเมื่อครบ 7 หลักเป๊ะๆ เท่านั้น
+      if (empId.length === 7) { 
+        infoDiv.innerHTML = "<span style='color: #0284c7; font-weight: 600;'>🔍 กำลังค้นหาข้อมูล...</span>";
+        btn.disabled = true;
+        
+        timer = setTimeout(() => {
+          fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "getEmployeeInfo", empId: empId }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          })
+          .then(res => res.json())
+          .then(res => {
+            if (res.status === "success") {
+              if (res.currentLineId && res.currentLineId !== "") {
+                // กรณีรหัสนี้ถูกผูกไปแล้ว
+                infoDiv.innerHTML = `<div class="emp-box">
+                  <span class="details">👤 คุณ ${res.name}</span>
+                  <span class="dept-text">แผนก : ${res.department || '-'}</span>
+                  <span class='error' style='margin-top: 8px;'>⚠️ รหัสพนักงานนี้ถูกลงทะเบียนไปแล้ว</span>
+                </div>`;
+              } else {
+                // กรณีรหัสว่าง พร้อมให้ผูก Line
+                infoDiv.innerHTML = `<div class="emp-box" style="border-color: #86efac; background: #f0fdf4;">
+                  <span class="details" style="color: #166534;">👤 คุณ ${res.name}</span>
+                  <span class="dept-text" style="color: #15803d;">แผนก : ${res.department || '-'}</span>
+                </div>`;
+                btn.disabled = false; 
+              }
+            } else {
+              infoDiv.innerHTML = "<span class='error'>❌ ไม่พบรหัสพนักงานนี้ในระบบ</span>";
+            }
+          })
+          .catch(() => {
+            infoDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการเชื่อมต่อ</span>";
+          });
+        }, 500);
+      } else {
+        infoDiv.innerHTML = "";
+        btn.disabled = true;
+      }
+    }
+
+    function register() {
+      var empId = document.getElementById("empId").value.trim();
+      var btn = document.getElementById("btn");
+      var statusDiv = document.getElementById("status");
+
+      if (!userId) {
+        statusDiv.innerHTML = "<span class='error'>ไม่พบ LINE ID กรุณาเปิดผ่านแอป LINE</span>";
+        return;
+      }
+
+      btn.disabled = true;
+      statusDiv.innerHTML = "<span style='color:#0284c7; font-weight: 600;'>⏳ กำลังบันทึกข้อมูล...</span>";
+
+      fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "registerLineId", empId: empId, lineId: userId }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          statusDiv.innerHTML = "<span class='success' style='font-size: 16px; display:block; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;'>🎉 " + res.message + "</span>";
+          // ปิดหน้าต่างหลังจากลงทะเบียนสำเร็จ 2 วินาที
+          setTimeout(() => { liff.closeWindow(); }, 2000); 
+        } else {
+          statusDiv.innerHTML = "<span class='error'>" + res.message + "</span>";
+          btn.disabled = false;
         }
-        main();
-    </script>
+      })
+      .catch(() => {
+        statusDiv.innerHTML = "<span class='error'>เกิดข้อผิดพลาดในการบันทึก</span>";
+        btn.disabled = false;
+      });
+    }
+  </script>
 </body>
 </html>
