@@ -20,11 +20,22 @@
     .profile-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
     .profile-box .name { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 5px; }
     .profile-box .emp-id { font-size: 15px; color: #64748b; font-weight: 600; }
-    select {
-      width: 100%; padding: 15px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 12px;
-      margin-bottom: 20px; font-family: 'Sarabun', sans-serif; font-weight: 600; color: #334155; outline: none;
+    
+    /* สไตล์สำหรับกล่อง Radio Buttons แบบใหม่ */
+    .radio-group {
+      background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 10px; margin-bottom: 20px; text-align: left;
     }
-    select:focus { border-color: #0ea5e9; }
+    .radio-option {
+      display: flex; align-items: center; padding: 12px 15px; cursor: pointer;
+      border-radius: 8px; transition: background 0.2s;
+    }
+    .radio-option:hover { background: #e2e8f0; }
+    .radio-option input[type="radio"] {
+      margin-right: 12px; transform: scale(1.3); accent-color: #0369a1;
+    }
+    .radio-label { font-size: 16px; font-weight: 600; color: #334155; }
+
     button.scan-btn {
       width: 100%; padding: 15px; font-size: 18px; border: none; border-radius: 12px; cursor: pointer;
       font-family: 'Sarabun', sans-serif; font-weight: 600; background: linear-gradient(135deg, #0284c7, #2563eb);
@@ -47,11 +58,21 @@
       <div class="emp-id">รหัสพนักงาน: <span id="displayEmpId">-</span></div>
     </div>
     
-    <select id="actionType">
-      <option value="เข้างาน">📍 บันทึกเข้างาน (Start)</option>
-      <option value="ส่งของ">📦 บันทึกส่งของ (Drop-off)</option>
-      <option value="เลิกงาน">🏠 บันทึกเลิกงาน (End)</option>
-    </select>
+    <!-- เปลี่ยนจาก Select เป็น Radio Buttons -->
+    <div class="radio-group">
+      <label class="radio-option">
+        <input type="radio" name="actionType" value="เข้างาน" checked>
+        <span class="radio-label">📍 บันทึกเข้างาน (Start)</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="actionType" value="ส่งของ">
+        <span class="radio-label">📦 บันทึกส่งของ (Drop-off)</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="actionType" value="เลิกงาน">
+        <span class="radio-label">🏠 บันทึกเลิกงาน (End)</span>
+      </label>
+    </div>
     
     <button id="scanBtn" class="scan-btn" onclick="startScanner()">📷 สแกน QR และบันทึกพิกัด</button>
     
@@ -61,7 +82,7 @@
 
   <script>
     var LIFF_ID = "2011288511-4Tt1UMUG"; 
-    // ⚠️ ตรวจสอบ URL ตรงนี้ให้เป็นตัวอัปเดตล่าสุดจากการ Deploy รายการใหม่นะครับ
+    // ⚠️ นำลิงก์ GAS_URL ตัวล่าสุดมาวางที่นี่
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxmpB3o0vTZwsFocnEe5VWDydWpmkTXN3H665SDPIvjF1IegvYl0s4dNiNTyMWfZE6J_Q/exec";
     var currentEmpId = "";
 
@@ -127,27 +148,26 @@
                   document.getElementById("reader").style.display = "none";
                   statusDiv.innerHTML = "<span style='color:#0284c7; font-size:18px;'>🚀 กำลังส่งข้อมูลไปยังระบบ...</span>";
                   
-                  const actionType = document.getElementById('actionType').value;
+                  // ดึงค่าจาก Radio Button ที่ถูกเลือก
+                  const actionType = document.querySelector('input[name="actionType"]:checked').value;
                   
                   fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: "saveLog", empId: currentEmpId, actionType: actionType, qrData: decodedText, lat: lat, lng: lng }),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                   })
-                  .then(res => res.text()) // รับเป็น text เพื่อดัก Error
+                  .then(res => res.text())
                   .then(text => {
                     try {
                       let res = JSON.parse(text);
                       if(res.status === "success") {
                         statusDiv.innerHTML = "<span style='color:#059669; font-size: 18px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>🎉 บันทึกข้อมูลสำเร็จ!</span>";
-                        // ปิดแอปอัตโนมัติเมื่ออยู่บน LINE
                         setTimeout(() => { if(liff.isInClient()) { liff.closeWindow(); } else { statusDiv.innerHTML += "<br><span style='font-size:14px; color:#64748b;'>กรุณาปิดหน้าต่างนี้ด้วยตนเอง</span>"; } }, 2000);
                       } else {
                         statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ " + res.message + "</span>";
                         scanBtn.disabled = false;
                       }
                     } catch(e) {
-                      // ข้อมูลเข้า Sheet แล้วแต่หน้าเว็บมีปัญหาตอนรับค่ากลับ
                       statusDiv.innerHTML = "<span style='color:#059669; font-size: 16px; display:block; padding: 15px; background: #f0fdf4; border-radius: 8px;'>✅ ข้อมูลถูกบันทึกลงระบบแล้ว<br><span style='font-size:14px; color:#64748b;'>(สามารถปิดหน้าต่างนี้ได้เลย)</span></span>";
                     }
                   }).catch(() => {
