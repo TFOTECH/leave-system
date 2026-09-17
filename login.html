@@ -1,86 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบลงเวลาและส่งงาน</title>
-  <!-- ดึงไลบรารีสำหรับสแกน QR Code -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <style>
-    body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 20px; text-align: center; }
-    .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
-    h3 { color: #333; margin-top: 0; }
-    input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-    button { background-color: #4CAF50; color: white; border: none; font-weight: bold; cursor: pointer; }
-    button:active { background-color: #45a049; }
-    #reader { width: 100%; margin-top: 15px; }
-    #statusInfo { margin-top: 15px; color: #d9534f; font-weight: bold; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกงานคนขับรถ</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body>
-
-  <div class="container">
-    <h3>🚚 ระบบบันทึกงานคนขับรถ</h3>
+<body style="font-family: sans-serif; text-align: center; padding: 20px;">
     
-    <input type="text" id="empId" placeholder="ใส่รหัสพนักงาน (เช่น 100001)">
+    <div id="statusText">⏳ กำลังตรวจสอบสิทธิ์...</div>
     
-    <select id="actionType">
-      <option value="เข้างาน">📍 เข้างาน (Start)</option>
-      <option value="ส่งของ">📦 ส่งของ (Drop-off)</option>
-      <option value="เลิกงาน">🏠 เลิกงาน (End)</option>
-    </select>
-    
-    <button onclick="startScanner()">📷 สแกน QR และบันทึกพิกัด</button>
-    
-    <div id="statusInfo"></div>
-    <div id="reader"></div>
-  </div>
+    <div id="workForm" style="display: none; max-width: 300px; margin: auto;">
+        <h3 style="color: #4CAF50;">สวัสดี, <span id="empName"></span></h3>
+        <p>รหัส: <span id="empIdDisplay"></span></p>
+        
+        <select id="actionType" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <option value="เข้างาน">📍 เข้างาน (Start)</option>
+            <option value="ส่งของ">📦 ส่งของ (Drop-off)</option>
+            <option value="เลิกงาน">🏠 เลิกงาน (End)</option>
+        </select>
+        
+        <button onclick="startScanner()" style="width: 100%; padding: 10px; background: #2196F3; color: white; border: none;">📷 สแกน QR Code</button>
+        <div id="reader" style="margin-top: 15px;"></div>
+    </div>
 
-  <script>
-    let html5QrCode;
+    <script>
+        const GAS_API_URL = "ใส่_URL_WEB_APP_ใหม่_ที่นี่"; // URL ตัวเดียวกันกับหน้า Register
+        let currentEmpId = "";
 
-    function startScanner() {
-      const empId = document.getElementById('empId').value;
-      if (!empId) { alert("⚠️ กรุณาใส่รหัสพนักงานก่อนครับ!"); return; }
+        async function main() {
+            await liff.init({ liffId: "ใส่_LIFF_ID_ของคุณ" }); // ใส่ LIFF ID (อาจใช้คนละตัวกับ Register หรือตัวเดียวกันก็ได้)
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const profile = await liff.getProfile();
+            
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "checkLogin", lineId: profile.userId }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById('statusText').style.display = 'none';
+                    document.getElementById('workForm').style.display = 'block';
+                    document.getElementById('empName').innerText = data.name;
+                    document.getElementById('empIdDisplay').innerText = data.empId;
+                    currentEmpId = data.empId;
+                } else {
+                    alert("❌ คุณยังไม่ได้ลงทะเบียน กรุณาลงทะเบียนก่อนครับ");
+                    window.location.href = "register.html"; // เด้งไปหน้าลงทะเบียน
+                }
+            });
+        }
 
-      const statusInfo = document.getElementById('statusInfo');
-      statusInfo.innerText = "⏳ กำลังค้นหาตำแหน่ง GPS...";
-
-      // 1. ดึงพิกัด GPS ก่อน
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          statusInfo.innerText = "✅ ได้พิกัดแล้ว กำลังเปิดกล้อง...";
-
-          // 2. เปิดกล้องสแกน QR Code
-          html5QrCode = new Html5Qrcode("reader");
-          html5QrCode.start(
-            { facingMode: "environment" }, // ใช้กล้องหลังมือถือ
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-              // 3. เมื่อสแกนเจอ ให้ปิดกล้องและส่งข้อมูลไปบันทึก
-              html5QrCode.stop();
-              statusInfo.innerText = "🚀 กำลังบันทึกข้อมูล...";
-              
-              const actionType = document.getElementById('actionType').value;
-              
-              google.script.run.withSuccessHandler(res => {
-                alert(res.message);
-                statusInfo.innerText = "🎉 เสร็จสิ้น!";
-                document.getElementById('empId').value = ""; // เคลียร์ช่องพิมพ์
-              }).saveLogData(empId, actionType, decodedText, lat, lng);
-            },
-            (error) => { /* ข้าม error ยิบย่อยระหว่างยังหา QR ไม่เจอ */ }
-          );
-        }, error => {
-          alert("❌ ระบบต้องการพิกัด กรุณาเปิด Location/GPS ในมือถือด้วยครับ");
-          statusInfo.innerText = "";
-        });
-      } else {
-        alert("บราวเซอร์นี้ไม่รองรับระบบ GPS");
-      }
-    }
-  </script>
+        function startScanner() {
+            navigator.geolocation.getCurrentPosition(position => {
+                document.getElementById('statusText').style.display = 'block';
+                document.getElementById('statusText').innerText = "✅ เปิดกล้องแล้ว สแกนได้เลย!";
+                
+                const html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+                    html5QrCode.stop();
+                    document.getElementById('statusText').innerText = "🚀 กำลังบันทึกข้อมูล...";
+                    
+                    fetch(GAS_API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "saveLog",
+                            empId: currentEmpId,
+                            actionType: document.getElementById('actionType').value,
+                            qrData: decodedText,
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        }),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    })
+                    .then(res => res.json())
+                    .then(data => { alert(data.message); window.location.reload(); });
+                }, () => {});
+            }, () => alert("❌ กรุณาเปิด Location/GPS ในมือถือด้วยครับ"));
+        }
+        main();
+    </script>
 </body>
 </html>
