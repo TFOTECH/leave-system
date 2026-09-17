@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ระบบบันทึกงานคนขับรถ</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- ดึงไลบรารีสำหรับเปิดกล้องสแกน QR Code -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -52,15 +51,14 @@
     
     #reader { width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; }
     #status { margin-top: 15px; font-size: 15px; font-weight: 600; }
-    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; }
+    .loading-page { color: #0284c7; font-size: 18px; font-weight: bold; margin-top: 50px; text-align: center; line-height: 1.5; }
+    .error-box { color: #dc2626; font-size: 14px; background: #fef2f2; padding: 10px; border-radius: 8px; margin-top: 10px; word-wrap: break-word;}
   </style>
 </head>
 <body>
 
-  <!-- โชว์ตอนกำลังโหลดข้อมูล -->
   <div id="loadingScreen" class="loading-page">⏳ กำลังตรวจสอบสิทธิ์การใช้งาน...</div>
 
-  <!-- หน้าจอหลัก (ซ่อนไว้ก่อนจนกว่าจะโหลดเสร็จ) -->
   <div class="card" id="mainScreen" style="display: none;">
     <h2>ระบบบันทึกงานคนขับรถ</h2>
     
@@ -83,6 +81,8 @@
 
   <script>
     var LIFF_ID = "2011288511-4Tt1UMUG"; 
+    
+    // ⚠️ เอา URL จากหน้า register.html มาวางทับตรงนี้ให้ตรงกันเป๊ะๆ
     var GAS_URL = "https://script.google.com/macros/s/AKfycbxISiISzLVfO0eD8_a_W8cj8_hl8jEYr6VgItKvrV3yUo7lBh5rwmdEPs7fnPfqe3xk/exec";
     
     var currentEmpId = "";
@@ -100,26 +100,31 @@
             body: JSON.stringify({ action: "checkLogin", lineId: profile.userId }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
           })
-          .then(res => res.json())
-          .then(data => {
-            if (data.status === "success") {
-              currentEmpId = data.empId;
-              document.getElementById("displayName").innerText = data.name;
-              document.getElementById("displayEmpId").innerText = data.empId;
-              
-              document.getElementById("loadingScreen").style.display = "none";
-              document.getElementById("mainScreen").style.display = "block";
-            } else {
-              alert("⚠️ ท่านยังไม่ได้ลงทะเบียนใช้งานระบบ");
-              window.location.href = "register.html"; 
+          .then(res => res.text()) // เปลี่ยนเป็นดึง Text ก่อนเพื่อดัก Error
+          .then(text => {
+            try {
+              let data = JSON.parse(text);
+              if (data.status === "success") {
+                currentEmpId = data.empId;
+                document.getElementById("displayName").innerText = data.name;
+                document.getElementById("displayEmpId").innerText = data.empId;
+                
+                document.getElementById("loadingScreen").style.display = "none";
+                document.getElementById("mainScreen").style.display = "block";
+              } else {
+                alert("⚠️ ท่านยังไม่ได้ลงทะเบียนใช้งานระบบ");
+                window.location.href = "register.html"; 
+              }
+            } catch(e) {
+              document.getElementById("loadingScreen").innerHTML = `❌ การเชื่อมต่อผิดพลาด<br><div class="error-box">ลืมเปลี่ยนลิงก์ GAS_URL หรือสิทธิ์ไม่ถูกต้อง<br>รายละเอียด: ${text.substring(0, 100)}...</div>`;
             }
           })
-          .catch(() => {
-            document.getElementById("loadingScreen").innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์";
+          .catch((err) => {
+            document.getElementById("loadingScreen").innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์<br><div class="error-box">${err.message}</div>`;
           });
         }
       } catch (err) {
-        document.getElementById("loadingScreen").innerText = "LINE Error: " + err.message;
+        document.getElementById("loadingScreen").innerHTML = `❌ LINE Error<br><div class="error-box">${err.message}</div>`;
       }
     };
 
@@ -171,6 +176,9 @@
                       statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ " + res.message + "</span>";
                       scanBtn.disabled = false;
                     }
+                  }).catch(() => {
+                    statusDiv.innerHTML = "<span style='color:#dc2626;'>❌ บันทึกไม่สำเร็จ ลิงก์ API อาจมีปัญหา</span>";
+                    scanBtn.disabled = false;
                   });
                 });
               },
